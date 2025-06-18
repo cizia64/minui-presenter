@@ -88,6 +88,13 @@ enum MessageAlignment
     MessageAlignmentBottom,
 };
 
+enum HorizontalAlignment
+{
+    HorizontalAlignmentLeft,
+    HorizontalAlignmentCenter,
+    HorizontalAlignmentRight,
+};
+
 struct Item
 {
     // the background color to use for the list
@@ -102,6 +109,8 @@ struct Item
     bool show_pill;
     // the alignment of the text
     enum MessageAlignment alignment;
+    // the horizontal alignment of the text
+    enum HorizontalAlignment horizontal_alignment;
 };
 
 // ItemsState holds the state of the list
@@ -380,6 +389,32 @@ struct ItemsState *ItemsState_New(const char *filename, const char *item_key, co
         {
             char buff[1024];
             snprintf(buff, sizeof(buff), "Invalid alignment provided for item %zu", i);
+            log_error(buff);
+            json_value_free(root_value);
+            return NULL;
+        }
+
+        const char *horizontal_alignment = json_object_get_string(item, "horizontal_alignment");
+        if (horizontal_alignment == NULL)
+        {
+            state->items[i].horizontal_alignment = HorizontalAlignmentCenter; // default
+        }
+        else if (strcmp(horizontal_alignment, "left") == 0)
+        {
+            state->items[i].horizontal_alignment = HorizontalAlignmentLeft;
+        }
+        else if (strcmp(horizontal_alignment, "right") == 0)
+        {
+            state->items[i].horizontal_alignment = HorizontalAlignmentRight;
+        }
+        else if (strcmp(horizontal_alignment, "center") == 0)
+        {
+            state->items[i].horizontal_alignment = HorizontalAlignmentCenter;
+        }
+        else
+        {
+            char buff[1024];
+            snprintf(buff, sizeof(buff), "Invalid horizontal_alignment provided for item %zu", i);
             log_error(buff);
             json_value_free(root_value);
             return NULL;
@@ -924,8 +959,24 @@ void draw_screen(SDL_Surface *screen, struct AppState *state)
             continue;
         }
 
+        int x_pos;
+        // Calcul de la position horizontale selon l'alignement
+        switch (state->items_state->items[state->items_state->selected].horizontal_alignment)
+        {
+        case HorizontalAlignmentLeft:
+            x_pos = SCALE1(PADDING * 2);  // Marge à gauche
+            break;
+        case HorizontalAlignmentRight:
+            x_pos = screen->w - text->w - SCALE1(PADDING * 2);  // Aligné à droite avec marge
+            break;
+        case HorizontalAlignmentCenter:
+        default:
+            x_pos = (screen->w - text->w) / 2;  // Centré (comportement par défaut)
+            break;
+        }
+
         SDL_Rect pos = {
-            ((screen->w - text->w) / 2),
+            x_pos,
             current_message_y + PADDING,
             text->w,
             text->h};
