@@ -1,3 +1,22 @@
+# Fork info:
+
+## About this fork
+
+This version introduces some new features for the specific needs of **[CrossMix-OS](https://github.com/cizia64/CrossMix-OS/)**:
+
+- **Handling Carriage Returns**: Support `\n` for multiline messages.
+- **Horizontal Text Alignment**: Support text alignment with options for **left**, **center**, and **right** alignment.
+- **Line Spacing Control**: Allows you to adjust the line spacing (padding).
+- **Optional Frame Buffer Cleanup**: You can now choose to suppress the automatic frame buffer cleaning upon exit.
+- **Spinner Addition**: A loading spinner can be activated on the last line of the message
+- **Message Scrolling**: Long messages can be scrolled with DPAD, with a scrollbar appearing on the right side for easy navigation.
+
+New options are detailed [here](#new-options-from-this-fork).
+Some json samples added [here](#json-file-format).
+
+A big thank you to **[Jose Diaz-Gonzalez](https://github.com/josegonzalez/)** for the creation of this application!
+
+
 # minui presenter
 
 This is a minui presentation app. It allows displaying messages on the screen with background colors and images.
@@ -20,11 +39,20 @@ minui-presenter --message "The quick brown fox jumps over the lazy dog"
 
 ### Options
 
+
+#### New options from this fork:
+
+- `--horizontal-alignment`: Set message horizontal alignment (default: `center`)
+- `--line-spacing`: Spacing is applied between each line (0 for minimal space)
+- `--preserve-framebuffer`: This allows to suppress the frame buffer cleaning at exit, so it removes black screen transitions between two presenter run.
+- `--show-spinner`: Little characters spinnger placed just after the last message, useful when the background task takes time
+
+
 #### Message Display
 
 - `--background-color <hex-color>`: Default background color to use (default: `#000000`).
 - `--background-image <path>`: Default background image to use (default: empty string).
-- `--message <text>`: Display a single message (default: empty string)
+- `--message <text>`: Display a single message (default: empty string), support `\n` for carriage return
 - `--message-alignment <alignment>`: Set message alignment (default: `middle`)
   - Valid values: `top`, `middle`, `bottom`
 - `--file <path>`: Path to JSON file containing messages (default: empty string)
@@ -132,6 +160,39 @@ When using `--file`, the JSON should follow this format:
 }
 ```
 
+Example of horizontal-alignment messages:
+
+```json
+{
+  "items": [
+    {
+      "text": "Left-aligned text",
+      "horizontal_alignment": "left"
+    },
+    {
+      "text": "Centered text",
+      "horizontal_alignment": "center"
+    },
+    {
+      "text": "Right-aligned text",
+      "horizontal_alignment": "right"
+    }
+  ]
+}
+```
+
+Example of horizontal-alignment messages:
+
+```json
+{
+  "items": [
+    {
+      "text": "Several\nlines\nmessage.",
+      "line_spacing": 20
+    }
+  ]
+}
+```
 An initial index can be specified via the `selected` key (default: `0`).
 
 When multiple items are displayed, the list can be scrolled using the `LEFT` AND `RIGHT` buttons.
