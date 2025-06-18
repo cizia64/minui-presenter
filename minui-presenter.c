@@ -259,6 +259,7 @@ char *read_stdin()
 struct ItemsState *ItemsState_New(const char *filename, const char *item_key, const char *default_background_image, const char *default_background_color, bool default_show_pill, enum MessageAlignment default_alignment)
 {
     struct ItemsState *state = malloc(sizeof(struct ItemsState));
+    enum HorizontalAlignment default_horizontal_alignment = HorizontalAlignmentCenter;  // default horizontal alignment
 
     JSON_Value *root_value;
     if (strcmp(filename, "-") == 0)
@@ -394,30 +395,33 @@ struct ItemsState *ItemsState_New(const char *filename, const char *item_key, co
             return NULL;
         }
 
-        const char *horizontal_alignment = json_object_get_string(item, "horizontal_alignment");
-        if (horizontal_alignment == NULL)
+        state->items[i].horizontal_alignment = default_horizontal_alignment;
+        if (json_object_has_value(item, "horizontal_alignment"))
         {
-            state->items[i].horizontal_alignment = HorizontalAlignmentCenter; // default
-        }
-        else if (strcmp(horizontal_alignment, "left") == 0)
-        {
-            state->items[i].horizontal_alignment = HorizontalAlignmentLeft;
-        }
-        else if (strcmp(horizontal_alignment, "right") == 0)
-        {
-            state->items[i].horizontal_alignment = HorizontalAlignmentRight;
-        }
-        else if (strcmp(horizontal_alignment, "center") == 0)
-        {
-            state->items[i].horizontal_alignment = HorizontalAlignmentCenter;
-        }
-        else
-        {
-            char buff[1024];
-            snprintf(buff, sizeof(buff), "Invalid horizontal_alignment provided for item %zu", i);
-            log_error(buff);
-            json_value_free(root_value);
-            return NULL;
+            const char *horiz_align = json_object_get_string(item, "horizontal_alignment");
+            if (horiz_align != NULL)
+            {
+                if (strcmp(horiz_align, "left") == 0)
+                {
+                    state->items[i].horizontal_alignment = HorizontalAlignmentLeft;
+                }
+                else if (strcmp(horiz_align, "right") == 0)
+                {
+                    state->items[i].horizontal_alignment = HorizontalAlignmentRight;
+                }
+                else if (strcmp(horiz_align, "center") == 0)
+                {
+                    state->items[i].horizontal_alignment = HorizontalAlignmentCenter;
+                }
+                else
+                {
+                    char buff[1024];
+                    snprintf(buff, sizeof(buff), "Invalid horizontal_alignment provided for item %zu", i);
+                    log_error(buff);
+                    json_value_free(root_value);
+                    return NULL;
+                }
+            }
         }
     }
 
@@ -1086,6 +1090,7 @@ void signal_handler(int signal)
 // - --cancel-text <text> (default: "BACK")
 // - --cancel-show (default: false)
 // - --disable-auto-sleep (default: false)
+// - --horizontal-alignment <left|center|right> (default: center)
 // - --inaction-button <button> (default: empty string)
 // - --inaction-text <text> (default: "OTHER")
 // - --inaction-show (default: false)
@@ -1116,6 +1121,7 @@ bool parse_arguments(struct AppState *state, int argc, char *argv[])
         {"file", required_argument, 0, 'E'},
         {"font-default", required_argument, 0, 'f'},
         {"font-size-default", required_argument, 0, 'F'},
+        {"horizontal-alignment", required_argument, 0, 'h'},
         {"item-key", required_argument, 0, 'K'},
         {"message", required_argument, 0, 'm'},
         {"message-alignment", required_argument, 0, 'M'},
@@ -1134,8 +1140,9 @@ bool parse_arguments(struct AppState *state, int argc, char *argv[])
     int opt;
     char *font_path = NULL;
     char message[1024];
-    char alignment[1024];
-    while ((opt = getopt_long(argc, argv, "a:A:b:B:c:C:d:D:E:f:F:i:I:K:m:M:t:QPSTUWYXZ", long_options, NULL)) != -1)
+    char alignment[1024] = "";
+    char horizontal_alignment[1024] = "center";  // default value
+    while ((opt = getopt_long(argc, argv, "a:A:b:B:c:C:d:D:E:f:F:h:i:I:K:m:M:t:QPSTUWYXZ", long_options, NULL)) != -1)
     {
         switch (opt)
         {
@@ -1171,6 +1178,9 @@ bool parse_arguments(struct AppState *state, int argc, char *argv[])
             break;
         case 'F':
             state->fonts.size = atoi(optarg);
+            break;
+        case 'h':
+            strncpy(horizontal_alignment, optarg, sizeof(horizontal_alignment));
             break;
         case 'i':
             strncpy(state->inaction_button, optarg, sizeof(state->inaction_button));
@@ -1241,6 +1251,25 @@ bool parse_arguments(struct AppState *state, int argc, char *argv[])
         return false;
     }
 
+    enum HorizontalAlignment default_horizontal_alignment = HorizontalAlignmentCenter;
+    if (strcmp(horizontal_alignment, "left") == 0)
+    {
+        default_horizontal_alignment = HorizontalAlignmentLeft;
+    }
+    else if (strcmp(horizontal_alignment, "right") == 0)
+    {
+        default_horizontal_alignment = HorizontalAlignmentRight;
+    }
+    else if (strcmp(horizontal_alignment, "center") == 0 || strcmp(horizontal_alignment, "") == 0)
+    {
+        default_horizontal_alignment = HorizontalAlignmentCenter;
+    }
+    else
+    {
+        log_error("Invalid horizontal alignment provided");
+        return false;
+    }
+
     if (strlen(message) > 0)
     {
         struct ItemsState *items_state = malloc(sizeof(struct ItemsState));
@@ -1250,6 +1279,8 @@ bool parse_arguments(struct AppState *state, int argc, char *argv[])
         items_state->items[0].background_image = NULL;
         items_state->items[0].image_exists = false;
         items_state->items[0].show_pill = state->show_pill;
+        items_state->items[0].alignment = default_alignment;
+        items_state->items[0].horizontal_alignment = default_horizontal_alignment;  // Set horizontal alignment
 
         if (strcmp(state->background_color, "") != 0)
         {
@@ -1262,7 +1293,6 @@ bool parse_arguments(struct AppState *state, int argc, char *argv[])
             items_state->items[0].image_exists = access(state->background_image, F_OK) != -1;
         }
 
-        items_state->items[0].alignment = default_alignment;
         items_state->item_count = 1;
         items_state->selected = 0;
         state->items_state = items_state;
