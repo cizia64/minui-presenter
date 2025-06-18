@@ -111,6 +111,8 @@ struct Item
     enum MessageAlignment alignment;
     // the horizontal alignment of the text
     enum HorizontalAlignment horizontal_alignment;
+    // the spacing between lines (in pixels, scaled by SCALE1)
+    int line_spacing;
 };
 
 // ItemsState holds the state of the list
@@ -184,6 +186,8 @@ struct AppState
     // the display states
     struct ItemsState *items_state;
 };
+
+#define MAX_MESSAGES 32  // Augmentation de la limite de lignes
 
 struct Message
 {
@@ -259,7 +263,8 @@ char *read_stdin()
 struct ItemsState *ItemsState_New(const char *filename, const char *item_key, const char *default_background_image, const char *default_background_color, bool default_show_pill, enum MessageAlignment default_alignment)
 {
     struct ItemsState *state = malloc(sizeof(struct ItemsState));
-    enum HorizontalAlignment default_horizontal_alignment = HorizontalAlignmentCenter;  // default horizontal alignment
+    enum HorizontalAlignment default_horizontal_alignment = HorizontalAlignmentCenter;
+    int default_line_spacing = PADDING;  // default line spacing
 
     JSON_Value *root_value;
     if (strcmp(filename, "-") == 0)
@@ -421,6 +426,25 @@ struct ItemsState *ItemsState_New(const char *filename, const char *item_key, co
                     json_value_free(root_value);
                     return NULL;
                 }
+            }
+        }
+
+        // Set default line spacing
+        state->items[i].line_spacing = default_line_spacing;
+        if (json_object_has_value(item, "line_spacing"))
+        {
+            int spacing = (int)json_object_get_number(item, "line_spacing");
+            if (spacing >= 0)
+            {
+                state->items[i].line_spacing = spacing;
+            }
+            else
+            {
+                char buff[1024];
+                snprintf(buff, sizeof(buff), "Invalid line_spacing value provided for item %zu", i);
+                log_error(buff);
+                json_value_free(root_value);
+                return NULL;
             }
         }
     }
@@ -860,14 +884,21 @@ void draw_screen(SDL_Surface *screen, struct AppState *state)
     char *line = strtok_r(original_message, "\n", &saveptr_lines);
     int word_height = 0;
     bool first_line = true;
+    int line_count = 0;
 
     while (line != NULL) {
+        if (line_count >= MAX_MESSAGES) {
+            log_error("Too many lines in message");
+            break;
+        }
+        line_count++;
+
         // Pour chaque ligne, on découpe en mots
         char *saveptr_words;
         char *word = strtok_r(line, " ", &saveptr_words);
         bool first_word_in_line = true;
 
-        while (word != NULL) {
+        while (word != NULL && word_count < 1024) {
             strtrim(word);
             if (strcmp(word, "") != 0) {
                 int word_width;
@@ -891,8 +922,8 @@ void draw_screen(SDL_Surface *screen, struct AppState *state)
     TTF_SizeUTF8(state->fonts.large, "A", &letter_width, NULL);
 
     // construct a list of messages that can be displayed on a single line
-    struct Message messages[MAIN_ROW_COUNT];
-    for (int i = 0; i < MAIN_ROW_COUNT; i++) {
+    struct Message messages[MAX_MESSAGES];
+    for (int i = 0; i < MAX_MESSAGES; i++) {
         strncpy(messages[i].message, "", sizeof(messages[i].message));
         messages[i].width = 0;
     }
@@ -900,7 +931,8 @@ void draw_screen(SDL_Surface *screen, struct AppState *state)
     int message_count = 0;
     int current_message_index = 0;
     for (int i = 0; i < word_count; i++) {
-        if (current_message_index >= MAIN_ROW_COUNT) {
+        if (current_message_index >= MAX_MESSAGES - 1) {  // Garder une marge de sécurité
+            log_error("Maximum number of lines reached");
             break;
         }
 
@@ -936,7 +968,11 @@ void draw_screen(SDL_Surface *screen, struct AppState *state)
         }
     }
 
-    int messages_height = (current_message_index + 1) * word_height + (SCALE1(PADDING) * current_message_index);
+    int messages_height = (current_message_index + 1) * word_height;
+    if (current_message_index > 0) {
+        messages_height += (current_message_index) * SCALE1(state->items_state->items[state->items_state->selected].line_spacing);
+    }
+
     // default to the middle of the screen
     int current_message_y = (screen->h - messages_height) / 2;
     if (state->items_state->items[state->items_state->selected].alignment == MessageAlignmentTop)
@@ -996,7 +1032,8 @@ void draw_screen(SDL_Surface *screen, struct AppState *state)
         }
 
         SDL_BlitSurface(text, NULL, screen, &pos);
-        current_message_y += word_height + SCALE1(PADDING);
+        current_message_y += word_height + SCALE1(state->items_state->items[state->items_state->selected].line_spacing);
+        SDL_FreeSurface(text);
     }
     if (state->action_show && strcmp(state->action_button, "") != 0)
     {
@@ -1091,6 +1128,7 @@ void signal_handler(int signal)
 // - --cancel-show (default: false)
 // - --disable-auto-sleep (default: false)
 // - --horizontal-alignment <left|center|right> (default: center)
+// - --line-spacing <pixels> (default: PADDING)
 // - --inaction-button <button> (default: empty string)
 // - --inaction-text <text> (default: "OTHER")
 // - --inaction-show (default: false)
@@ -1122,6 +1160,7 @@ bool parse_arguments(struct AppState *state, int argc, char *argv[])
         {"font-default", required_argument, 0, 'f'},
         {"font-size-default", required_argument, 0, 'F'},
         {"horizontal-alignment", required_argument, 0, 'h'},
+        {"line-spacing", required_argument, 0, 'l'},
         {"item-key", required_argument, 0, 'K'},
         {"message", required_argument, 0, 'm'},
         {"message-alignment", required_argument, 0, 'M'},
@@ -1142,7 +1181,8 @@ bool parse_arguments(struct AppState *state, int argc, char *argv[])
     char message[1024];
     char alignment[1024] = "";
     char horizontal_alignment[1024] = "center";  // default value
-    while ((opt = getopt_long(argc, argv, "a:A:b:B:c:C:d:D:E:f:F:h:i:I:K:m:M:t:QPSTUWYXZ", long_options, NULL)) != -1)
+    int line_spacing = PADDING;  // default value
+    while ((opt = getopt_long(argc, argv, "a:A:b:B:c:C:d:D:E:f:F:h:i:I:K:l:m:M:t:QPSTUWYXZ", long_options, NULL)) != -1)
     {
         switch (opt)
         {
@@ -1190,6 +1230,9 @@ bool parse_arguments(struct AppState *state, int argc, char *argv[])
             break;
         case 'K':
             strncpy(state->item_key, optarg, sizeof(state->item_key));
+            break;
+        case 'l':
+            line_spacing = atoi(optarg);
             break;
         case 'm':
             strncpy(message, optarg, sizeof(message));
@@ -1280,7 +1323,8 @@ bool parse_arguments(struct AppState *state, int argc, char *argv[])
         items_state->items[0].image_exists = false;
         items_state->items[0].show_pill = state->show_pill;
         items_state->items[0].alignment = default_alignment;
-        items_state->items[0].horizontal_alignment = default_horizontal_alignment;  // Set horizontal alignment
+        items_state->items[0].horizontal_alignment = default_horizontal_alignment;
+        items_state->items[0].line_spacing = line_spacing;
 
         if (strcmp(state->background_color, "") != 0)
         {
@@ -1741,7 +1785,7 @@ int main(int argc, char *argv[])
         if (state.redraw)
         {
             // clear the screen at the beginning of each loop
-            GFX_clear(screen);
+            // GFX_clear(screen);
 
             if (state.show_hardware_group)
             {
