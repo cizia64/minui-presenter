@@ -93,58 +93,58 @@ static int _;
 SDL_Surface* GFX_init(int mode) {
 	// TODO: this doesn't really belong here...
 	// tried adding to PWR_init() but that was no good (not sure why)
-	PLAT_initLid();
+	// PLAT_initLid();
 	
 	gfx.screen = PLAT_initVideo();
-	gfx.vsync = VSYNC_STRICT;
-	gfx.mode = mode;
+	// gfx.vsync = VSYNC_STRICT;
+	// gfx.mode = mode;
 	
-	RGB_WHITE		= SDL_MapRGB(gfx.screen->format, TRIAD_WHITE);
-	RGB_BLACK		= SDL_MapRGB(gfx.screen->format, TRIAD_BLACK);
-	RGB_LIGHT_GRAY	= SDL_MapRGB(gfx.screen->format, TRIAD_LIGHT_GRAY);
-	RGB_GRAY		= SDL_MapRGB(gfx.screen->format, TRIAD_GRAY);
+	// RGB_WHITE		= SDL_MapRGB(gfx.screen->format, TRIAD_WHITE);
+	// RGB_BLACK		= SDL_MapRGB(gfx.screen->format, TRIAD_BLACK);
+	// RGB_LIGHT_GRAY	= SDL_MapRGB(gfx.screen->format, TRIAD_LIGHT_GRAY);
+	// RGB_GRAY		= SDL_MapRGB(gfx.screen->format, TRIAD_GRAY);
 	RGB_DARK_GRAY	= SDL_MapRGB(gfx.screen->format, TRIAD_DARK_GRAY);
 	
-	asset_rgbs[ASSET_WHITE_PILL]	= RGB_WHITE;
-	asset_rgbs[ASSET_BLACK_PILL]	= RGB_BLACK;
+	// asset_rgbs[ASSET_WHITE_PILL]	= RGB_WHITE;
+	// asset_rgbs[ASSET_BLACK_PILL]	= RGB_BLACK;
 	asset_rgbs[ASSET_DARK_GRAY_PILL]= RGB_DARK_GRAY;
-	asset_rgbs[ASSET_OPTION]		= RGB_DARK_GRAY;
-	asset_rgbs[ASSET_BUTTON]		= RGB_WHITE;
-	asset_rgbs[ASSET_PAGE_BG]		= RGB_WHITE;
-	asset_rgbs[ASSET_STATE_BG]		= RGB_WHITE;
-	asset_rgbs[ASSET_PAGE]			= RGB_BLACK;
-	asset_rgbs[ASSET_BAR]			= RGB_WHITE;
-	asset_rgbs[ASSET_BAR_BG]		= RGB_BLACK;
-	asset_rgbs[ASSET_BAR_BG_MENU]	= RGB_DARK_GRAY;
-	asset_rgbs[ASSET_UNDERLINE]		= RGB_GRAY;
-	asset_rgbs[ASSET_DOT]			= RGB_LIGHT_GRAY;
-	asset_rgbs[ASSET_HOLE]			= RGB_BLACK;
+	// asset_rgbs[ASSET_OPTION]		= RGB_DARK_GRAY;
+	// asset_rgbs[ASSET_BUTTON]		= RGB_WHITE;
+	// asset_rgbs[ASSET_PAGE_BG]		= RGB_WHITE;
+	// asset_rgbs[ASSET_STATE_BG]		= RGB_WHITE;
+	// asset_rgbs[ASSET_PAGE]			= RGB_BLACK;
+	// asset_rgbs[ASSET_BAR]			= RGB_WHITE;
+	// asset_rgbs[ASSET_BAR_BG]		= RGB_BLACK;
+	// asset_rgbs[ASSET_BAR_BG_MENU]	= RGB_DARK_GRAY;
+	// asset_rgbs[ASSET_UNDERLINE]		= RGB_GRAY;
+	// asset_rgbs[ASSET_DOT]			= RGB_LIGHT_GRAY;
+	// asset_rgbs[ASSET_HOLE]			= RGB_BLACK;
 	
-	asset_rects[ASSET_WHITE_PILL]		= (SDL_Rect){SCALE4( 1, 1,30,30)};
-	asset_rects[ASSET_BLACK_PILL]		= (SDL_Rect){SCALE4(33, 1,30,30)};
+	// asset_rects[ASSET_WHITE_PILL]		= (SDL_Rect){SCALE4( 1, 1,30,30)};
+	// asset_rects[ASSET_BLACK_PILL]		= (SDL_Rect){SCALE4(33, 1,30,30)};
 	asset_rects[ASSET_DARK_GRAY_PILL]	= (SDL_Rect){SCALE4(65, 1,30,30)};
-	asset_rects[ASSET_OPTION]			= (SDL_Rect){SCALE4(97, 1,20,20)};
+	// asset_rects[ASSET_OPTION]			= (SDL_Rect){SCALE4(97, 1,20,20)};
 	asset_rects[ASSET_BUTTON]			= (SDL_Rect){SCALE4( 1,33,20,20)};
-	asset_rects[ASSET_PAGE_BG]			= (SDL_Rect){SCALE4(64,33,15,15)};
-	asset_rects[ASSET_STATE_BG]			= (SDL_Rect){SCALE4(23,54, 8, 8)};
-	asset_rects[ASSET_PAGE]				= (SDL_Rect){SCALE4(39,54, 6, 6)};
-	asset_rects[ASSET_BAR]				= (SDL_Rect){SCALE4(33,58, 4, 4)};
-	asset_rects[ASSET_BAR_BG]			= (SDL_Rect){SCALE4(15,55, 4, 4)};
-	asset_rects[ASSET_BAR_BG_MENU]		= (SDL_Rect){SCALE4(85,56, 4, 4)};
-	asset_rects[ASSET_UNDERLINE]		= (SDL_Rect){SCALE4(85,51, 3, 3)};
-	asset_rects[ASSET_DOT]				= (SDL_Rect){SCALE4(33,54, 2, 2)};
-	asset_rects[ASSET_BRIGHTNESS]		= (SDL_Rect){SCALE4(23,33,19,19)};
-	asset_rects[ASSET_VOLUME_MUTE]		= (SDL_Rect){SCALE4(44,33,10,16)};
-	asset_rects[ASSET_VOLUME]			= (SDL_Rect){SCALE4(44,33,18,16)};
-	asset_rects[ASSET_BATTERY]			= (SDL_Rect){SCALE4(47,51,17,10)};
-	asset_rects[ASSET_BATTERY_LOW]		= (SDL_Rect){SCALE4(66,51,17,10)};
-	asset_rects[ASSET_BATTERY_FILL]		= (SDL_Rect){SCALE4(81,33,12, 6)};
-	asset_rects[ASSET_BATTERY_FILL_LOW]	= (SDL_Rect){SCALE4( 1,55,12, 6)};
-	asset_rects[ASSET_BATTERY_BOLT]		= (SDL_Rect){SCALE4(81,41,12, 6)};
-	asset_rects[ASSET_SCROLL_UP]		= (SDL_Rect){SCALE4(97,23,24, 6)};
-	asset_rects[ASSET_SCROLL_DOWN]		= (SDL_Rect){SCALE4(97,31,24, 6)};
-	asset_rects[ASSET_WIFI]				= (SDL_Rect){SCALE4(95,39,14,10)};
-	asset_rects[ASSET_HOLE]				= (SDL_Rect){SCALE4( 1,63,20,20)};
+	// asset_rects[ASSET_PAGE_BG]			= (SDL_Rect){SCALE4(64,33,15,15)};
+	// asset_rects[ASSET_STATE_BG]			= (SDL_Rect){SCALE4(23,54, 8, 8)};
+	// asset_rects[ASSET_PAGE]				= (SDL_Rect){SCALE4(39,54, 6, 6)};
+	// asset_rects[ASSET_BAR]				= (SDL_Rect){SCALE4(33,58, 4, 4)};
+	// asset_rects[ASSET_BAR_BG]			= (SDL_Rect){SCALE4(15,55, 4, 4)};
+	// asset_rects[ASSET_BAR_BG_MENU]		= (SDL_Rect){SCALE4(85,56, 4, 4)};
+	// asset_rects[ASSET_UNDERLINE]		= (SDL_Rect){SCALE4(85,51, 3, 3)};
+	// asset_rects[ASSET_DOT]				= (SDL_Rect){SCALE4(33,54, 2, 2)};
+	// asset_rects[ASSET_BRIGHTNESS]		= (SDL_Rect){SCALE4(23,33,19,19)};
+	// asset_rects[ASSET_VOLUME_MUTE]		= (SDL_Rect){SCALE4(44,33,10,16)};
+	// asset_rects[ASSET_VOLUME]			= (SDL_Rect){SCALE4(44,33,18,16)};
+	// asset_rects[ASSET_BATTERY]			= (SDL_Rect){SCALE4(47,51,17,10)};
+	// asset_rects[ASSET_BATTERY_LOW]		= (SDL_Rect){SCALE4(66,51,17,10)};
+	// asset_rects[ASSET_BATTERY_FILL]		= (SDL_Rect){SCALE4(81,33,12, 6)};
+	// asset_rects[ASSET_BATTERY_FILL_LOW]	= (SDL_Rect){SCALE4( 1,55,12, 6)};
+	// asset_rects[ASSET_BATTERY_BOLT]		= (SDL_Rect){SCALE4(81,41,12, 6)};
+	// asset_rects[ASSET_SCROLL_UP]		= (SDL_Rect){SCALE4(97,23,24, 6)};
+	// asset_rects[ASSET_SCROLL_DOWN]		= (SDL_Rect){SCALE4(97,31,24, 6)};
+	// asset_rects[ASSET_WIFI]				= (SDL_Rect){SCALE4(95,39,14,10)};
+	// asset_rects[ASSET_HOLE]				= (SDL_Rect){SCALE4( 1,63,20,20)};
 	
 	char asset_path[MAX_PATH];
 	sprintf(asset_path, RES_PATH "/assets@%ix.png", FIXED_SCALE);
@@ -164,6 +164,7 @@ SDL_Surface* GFX_init(int mode) {
 	
 	return gfx.screen;
 }
+
 void GFX_quit(void) {
 	TTF_CloseFont(font.large);
 	TTF_CloseFont(font.medium);
@@ -172,7 +173,7 @@ void GFX_quit(void) {
 	
 	SDL_FreeSurface(gfx.assets);
 	
-	GFX_freeAAScaler();
+	// GFX_freeAAScaler();
 	
 	GFX_clearAll();
 
@@ -190,14 +191,14 @@ void GFX_setVsync(int vsync) {
 	gfx.vsync = vsync;
 }
 
-int GFX_hdmiChanged(void) {
-	static int had_hdmi = -1;
-	int has_hdmi = GetHDMI();
-	if (had_hdmi==-1) had_hdmi = has_hdmi;
-	if (had_hdmi==has_hdmi) return 0;
-	had_hdmi = has_hdmi;
-	return 1;
-}
+// int GFX_hdmiChanged(void) {
+// 	static int had_hdmi = -1;
+// 	int has_hdmi = GetHDMI();
+// 	if (had_hdmi==-1) had_hdmi = has_hdmi;
+// 	if (had_hdmi==has_hdmi) return 0;
+// 	had_hdmi = has_hdmi;
+// 	return 1;
+// }
 
 #define FRAME_BUDGET 17 // 60fps
 static uint32_t frame_start = 0;
@@ -372,132 +373,132 @@ static inline int gcd(int a, int b) {
 	return b ? gcd(b, a % b) : a;
 }
 
-static void scaleAA(void* __restrict src, void* __restrict dst, uint32_t w, uint32_t h, uint32_t pitch, uint32_t dst_w, uint32_t dst_h, uint32_t dst_p) {
-	int dy = 0;
-	int lines = h;
+// static void scaleAA(void* __restrict src, void* __restrict dst, uint32_t w, uint32_t h, uint32_t pitch, uint32_t dst_w, uint32_t dst_h, uint32_t dst_p) {
+// 	int dy = 0;
+// 	int lines = h;
 
-	int rat_w = blend_args.w_ratio_in;
-	int rat_dst_w = blend_args.w_ratio_out;
-	uint16_t *bw = blend_args.w_bp;
+// 	int rat_w = blend_args.w_ratio_in;
+// 	int rat_dst_w = blend_args.w_ratio_out;
+// 	uint16_t *bw = blend_args.w_bp;
 
-	int rat_h = blend_args.h_ratio_in;
-	int rat_dst_h = blend_args.h_ratio_out;
-	uint16_t *bh = blend_args.h_bp;
+// 	int rat_h = blend_args.h_ratio_in;
+// 	int rat_dst_h = blend_args.h_ratio_out;
+// 	uint16_t *bh = blend_args.h_bp;
 
-	while (lines--) {
-		while (dy < rat_dst_h) {
-			uint16_t *dst16 = (uint16_t *)dst;
-			uint16_t *pblend = (uint16_t *)blend_args.blend_line;
-			int col = w;
-			int dx = 0;
+// 	while (lines--) {
+// 		while (dy < rat_dst_h) {
+// 			uint16_t *dst16 = (uint16_t *)dst;
+// 			uint16_t *pblend = (uint16_t *)blend_args.blend_line;
+// 			int col = w;
+// 			int dx = 0;
 
-			uint16_t *pnext = (uint16_t *)(src + pitch);
-			if (!lines)
-				pnext -= (pitch / sizeof(uint16_t));
+// 			uint16_t *pnext = (uint16_t *)(src + pitch);
+// 			if (!lines)
+// 				pnext -= (pitch / sizeof(uint16_t));
 
-			if (dy > rat_dst_h - bh[0]) {
-				pblend = pnext;
-			} else if (dy <= bh[0]) {
-				/* Drops const, won't get touched later though */
-				pblend = (uint16_t *)src;
-			} else {
-				const uint32_t *src32 = (const uint32_t *)src;
-				const uint32_t *pnext32 = (const uint32_t *)pnext;
-				uint32_t *pblend32 = (uint32_t *)pblend;
-				int count = w / 2;
+// 			if (dy > rat_dst_h - bh[0]) {
+// 				pblend = pnext;
+// 			} else if (dy <= bh[0]) {
+// 				/* Drops const, won't get touched later though */
+// 				pblend = (uint16_t *)src;
+// 			} else {
+// 				const uint32_t *src32 = (const uint32_t *)src;
+// 				const uint32_t *pnext32 = (const uint32_t *)pnext;
+// 				uint32_t *pblend32 = (uint32_t *)pblend;
+// 				int count = w / 2;
 
-				if (dy <= bh[1]) {
-					const uint32_t *tmp = pnext32;
-					pnext32 = src32;
-					src32 = tmp;
-				}
+// 				if (dy <= bh[1]) {
+// 					const uint32_t *tmp = pnext32;
+// 					pnext32 = src32;
+// 					src32 = tmp;
+// 				}
 
-				if (dy > rat_dst_h - bh[1] || dy <= bh[1]) {
-					while(count--) {
-						*pblend32++ = AVERAGE32_1_3(*src32, *pnext32);
-						src32++;
-						pnext32++;
-					}
-				} else {
-					while(count--) {
-						*pblend32++ = AVERAGE32(*src32, *pnext32);
-						src32++;
-						pnext32++;
-					}
-				}
-			}
+// 				if (dy > rat_dst_h - bh[1] || dy <= bh[1]) {
+// 					while(count--) {
+// 						*pblend32++ = AVERAGE32_1_3(*src32, *pnext32);
+// 						src32++;
+// 						pnext32++;
+// 					}
+// 				} else {
+// 					while(count--) {
+// 						*pblend32++ = AVERAGE32(*src32, *pnext32);
+// 						src32++;
+// 						pnext32++;
+// 					}
+// 				}
+// 			}
 
-			while (col--) {
-				uint16_t a, b, out;
+// 			while (col--) {
+// 				uint16_t a, b, out;
 
-				a = *pblend;
-				b = *(pblend+1);
+// 				a = *pblend;
+// 				b = *(pblend+1);
 
-				while (dx < rat_dst_w) {
-					if (a == b) {
-						out = a;
-					} else if (dx > rat_dst_w - bw[0]) { // top quintile, bbbb
-						out = b;
-					} else if (dx <= bw[0]) { // last quintile, aaaa
-						out = a;
-					} else {
-						if (dx > rat_dst_w - bw[1]) { // 2nd quintile, abbb
-							a = AVERAGE16_NOCHK(a,b);
-						} else if (dx <= bw[1]) { // 4th quintile, aaab
-							b = AVERAGE16_NOCHK(a,b);
-						}
+// 				while (dx < rat_dst_w) {
+// 					if (a == b) {
+// 						out = a;
+// 					} else if (dx > rat_dst_w - bw[0]) { // top quintile, bbbb
+// 						out = b;
+// 					} else if (dx <= bw[0]) { // last quintile, aaaa
+// 						out = a;
+// 					} else {
+// 						if (dx > rat_dst_w - bw[1]) { // 2nd quintile, abbb
+// 							a = AVERAGE16_NOCHK(a,b);
+// 						} else if (dx <= bw[1]) { // 4th quintile, aaab
+// 							b = AVERAGE16_NOCHK(a,b);
+// 						}
 
-						out = AVERAGE16_NOCHK(a, b); // also 3rd quintile, aabb
-					}
-					*dst16++ = out;
-					dx += rat_w;
-				}
+// 						out = AVERAGE16_NOCHK(a, b); // also 3rd quintile, aabb
+// 					}
+// 					*dst16++ = out;
+// 					dx += rat_w;
+// 				}
 
-				dx -= rat_dst_w;
-				pblend++;
-			}
+// 				dx -= rat_dst_w;
+// 				pblend++;
+// 			}
 
-			dy += rat_h;
-			dst += dst_p;
-		}
+// 			dy += rat_h;
+// 			dst += dst_p;
+// 		}
 
-		dy -= rat_dst_h;
-		src += pitch;
-	}
-}
+// 		dy -= rat_dst_h;
+// 		src += pitch;
+// 	}
+// }
 
-scaler_t GFX_getAAScaler(GFX_Renderer* renderer) {
-	int gcd_w, div_w, gcd_h, div_h;
-	blend_args.blend_line = calloc(renderer->src_w, sizeof(uint16_t));
+// scaler_t GFX_getAAScaler(GFX_Renderer* renderer) {
+// 	int gcd_w, div_w, gcd_h, div_h;
+// 	blend_args.blend_line = calloc(renderer->src_w, sizeof(uint16_t));
 
-	gcd_w = gcd(renderer->src_w, renderer->dst_w);
-	blend_args.w_ratio_in = renderer->src_w / gcd_w;
-	blend_args.w_ratio_out = renderer->dst_w / gcd_w;
+// 	gcd_w = gcd(renderer->src_w, renderer->dst_w);
+// 	blend_args.w_ratio_in = renderer->src_w / gcd_w;
+// 	blend_args.w_ratio_out = renderer->dst_w / gcd_w;
 	
-	double blend_denominator = (renderer->src_w>renderer->dst_w) ? 5 : 2.5; // TODO: these values are really only good for the nano...
-	// blend_denominator = 5.0; // better for trimui
-	// LOG_info("blend_denominator: %f (%i && %i)\n", blend_denominator, HAS_SKINNY_SCREEN, renderer->dst_w>renderer->src_w);
+// 	double blend_denominator = (renderer->src_w>renderer->dst_w) ? 5 : 2.5; // TODO: these values are really only good for the nano...
+// 	// blend_denominator = 5.0; // better for trimui
+// 	// LOG_info("blend_denominator: %f (%i && %i)\n", blend_denominator, HAS_SKINNY_SCREEN, renderer->dst_w>renderer->src_w);
 	
-	div_w = round(blend_args.w_ratio_out / blend_denominator);
-	blend_args.w_bp[0] = div_w;
-	blend_args.w_bp[1] = blend_args.w_ratio_out >> 1;
+// 	div_w = round(blend_args.w_ratio_out / blend_denominator);
+// 	blend_args.w_bp[0] = div_w;
+// 	blend_args.w_bp[1] = blend_args.w_ratio_out >> 1;
 
-	gcd_h = gcd(renderer->src_h, renderer->dst_h);
-	blend_args.h_ratio_in = renderer->src_h / gcd_h;
-	blend_args.h_ratio_out = renderer->dst_h / gcd_h;
+// 	gcd_h = gcd(renderer->src_h, renderer->dst_h);
+// 	blend_args.h_ratio_in = renderer->src_h / gcd_h;
+// 	blend_args.h_ratio_out = renderer->dst_h / gcd_h;
 
-	div_h = round(blend_args.h_ratio_out / blend_denominator);
-	blend_args.h_bp[0] = div_h;
-	blend_args.h_bp[1] = blend_args.h_ratio_out >> 1;
+// 	div_h = round(blend_args.h_ratio_out / blend_denominator);
+// 	blend_args.h_bp[0] = div_h;
+// 	blend_args.h_bp[1] = blend_args.h_ratio_out >> 1;
 	
-	return scaleAA;
-}
-void GFX_freeAAScaler(void) {
-	if (blend_args.blend_line != NULL) {
-		free(blend_args.blend_line);
-		blend_args.blend_line = NULL;
-	}
-}
+// 	return scaleAA;
+// }
+// void GFX_freeAAScaler(void) {
+// 	if (blend_args.blend_line != NULL) {
+// 		free(blend_args.blend_line);
+// 		blend_args.blend_line = NULL;
+// 	}
+// }
 
 ///////////////////////////////
 
@@ -689,103 +690,103 @@ void GFX_blitMessage(TTF_Font* font, char* msg, SDL_Surface* dst, SDL_Rect* dst_
 	}
 }
 
-int GFX_blitHardwareGroup(SDL_Surface* dst, int show_setting) {
-	int ox;
-	int oy;
-	int ow = 0;
+// int GFX_blitHardwareGroup(SDL_Surface* dst, int show_setting) {
+// 	int ox;
+// 	int oy;
+// 	int ow = 0;
 	
-	int setting_value;
-	int setting_min;
-	int setting_max;
+// 	int setting_value;
+// 	int setting_min;
+// 	int setting_max;
 	
-	if (show_setting && !GetHDMI()) {
-		ow = SCALE1(PILL_SIZE + SETTINGS_WIDTH + 10 + 4);
-		ox = dst->w - SCALE1(PADDING) - ow;
-		oy = SCALE1(PADDING);
-		GFX_blitPill(gfx.mode==MODE_MAIN ? ASSET_DARK_GRAY_PILL : ASSET_BLACK_PILL, dst, &(SDL_Rect){
-			ox,
-			oy,
-			ow,
-			SCALE1(PILL_SIZE)
-		});
+// 	if (show_setting && !GetHDMI()) {
+// 		ow = SCALE1(PILL_SIZE + SETTINGS_WIDTH + 10 + 4);
+// 		ox = dst->w - SCALE1(PADDING) - ow;
+// 		oy = SCALE1(PADDING);
+// 		GFX_blitPill(gfx.mode==MODE_MAIN ? ASSET_DARK_GRAY_PILL : ASSET_BLACK_PILL, dst, &(SDL_Rect){
+// 			ox,
+// 			oy,
+// 			ow,
+// 			SCALE1(PILL_SIZE)
+// 		});
 		
-		if (show_setting==1) {
-			setting_value = GetBrightness();
-			setting_min = BRIGHTNESS_MIN;
-			setting_max = BRIGHTNESS_MAX;
-		}
-		else {
-			setting_value = GetVolume();
-			setting_min = VOLUME_MIN;
-			setting_max = VOLUME_MAX;
-		}
+// 		if (show_setting==1) {
+// 			setting_value = GetBrightness();
+// 			setting_min = BRIGHTNESS_MIN;
+// 			setting_max = BRIGHTNESS_MAX;
+// 		}
+// 		else {
+// 			setting_value = GetVolume();
+// 			setting_min = VOLUME_MIN;
+// 			setting_max = VOLUME_MAX;
+// 		}
 		
-		int asset = show_setting==1?ASSET_BRIGHTNESS:(setting_value>0?ASSET_VOLUME:ASSET_VOLUME_MUTE);
-		int ax = ox + (show_setting==1 ? SCALE1(6) : SCALE1(8));
-		int ay = oy + (show_setting==1 ? SCALE1(5) : SCALE1(7));
-		GFX_blitAsset(asset, NULL, dst, &(SDL_Rect){ax,ay});
+// 		int asset = show_setting==1?ASSET_BRIGHTNESS:(setting_value>0?ASSET_VOLUME:ASSET_VOLUME_MUTE);
+// 		int ax = ox + (show_setting==1 ? SCALE1(6) : SCALE1(8));
+// 		int ay = oy + (show_setting==1 ? SCALE1(5) : SCALE1(7));
+// 		GFX_blitAsset(asset, NULL, dst, &(SDL_Rect){ax,ay});
 		
-		ox += SCALE1(PILL_SIZE);
-		oy += SCALE1((PILL_SIZE - SETTINGS_SIZE) / 2);
-		GFX_blitPill(gfx.mode==MODE_MAIN ? ASSET_BAR_BG : ASSET_BAR_BG_MENU, dst, &(SDL_Rect){
-			ox,
-			oy,
-			SCALE1(SETTINGS_WIDTH),
-			SCALE1(SETTINGS_SIZE)
-		});
+// 		ox += SCALE1(PILL_SIZE);
+// 		oy += SCALE1((PILL_SIZE - SETTINGS_SIZE) / 2);
+// 		GFX_blitPill(gfx.mode==MODE_MAIN ? ASSET_BAR_BG : ASSET_BAR_BG_MENU, dst, &(SDL_Rect){
+// 			ox,
+// 			oy,
+// 			SCALE1(SETTINGS_WIDTH),
+// 			SCALE1(SETTINGS_SIZE)
+// 		});
 		
-		float percent = ((float)(setting_value-setting_min) / (setting_max-setting_min));
-		if (show_setting==1 || setting_value>0) {
-			GFX_blitPill(ASSET_BAR, dst, &(SDL_Rect){
-				ox,
-				oy,
-				SCALE1(SETTINGS_WIDTH) * percent,
-				SCALE1(SETTINGS_SIZE)
-			});
-		}
-	}
-	else {
-		// TODO: handle wifi
-		int show_wifi = PLAT_isOnline(); // NOOOOO! not every frame!
+// 		float percent = ((float)(setting_value-setting_min) / (setting_max-setting_min));
+// 		if (show_setting==1 || setting_value>0) {
+// 			GFX_blitPill(ASSET_BAR, dst, &(SDL_Rect){
+// 				ox,
+// 				oy,
+// 				SCALE1(SETTINGS_WIDTH) * percent,
+// 				SCALE1(SETTINGS_SIZE)
+// 			});
+// 		}
+// 	}
+// 	else {
+// 		// TODO: handle wifi
+// 		int show_wifi = PLAT_isOnline(); // NOOOOO! not every frame!
 
-		int ww = SCALE1(PILL_SIZE-3);
-		ow = SCALE1(PILL_SIZE);
-		if (show_wifi) ow += ww;
+// 		int ww = SCALE1(PILL_SIZE-3);
+// 		ow = SCALE1(PILL_SIZE);
+// 		if (show_wifi) ow += ww;
 
-		ox = dst->w - SCALE1(PADDING) - ow;
-		oy = SCALE1(PADDING);
-		GFX_blitPill(gfx.mode==MODE_MAIN ? ASSET_DARK_GRAY_PILL : ASSET_BLACK_PILL, dst, &(SDL_Rect){
-			ox,
-			oy,
-			ow,
-			SCALE1(PILL_SIZE)
-		});
-		if (show_wifi) {
-			SDL_Rect rect = asset_rects[ASSET_WIFI];
-			int x = ox;
-			int y = oy;
-			x += (SCALE1(PILL_SIZE) - rect.w) / 2;
-			y += (SCALE1(PILL_SIZE) - rect.h) / 2;
+// 		ox = dst->w - SCALE1(PADDING) - ow;
+// 		oy = SCALE1(PADDING);
+// 		GFX_blitPill(gfx.mode==MODE_MAIN ? ASSET_DARK_GRAY_PILL : ASSET_BLACK_PILL, dst, &(SDL_Rect){
+// 			ox,
+// 			oy,
+// 			ow,
+// 			SCALE1(PILL_SIZE)
+// 		});
+// 		if (show_wifi) {
+// 			SDL_Rect rect = asset_rects[ASSET_WIFI];
+// 			int x = ox;
+// 			int y = oy;
+// 			x += (SCALE1(PILL_SIZE) - rect.w) / 2;
+// 			y += (SCALE1(PILL_SIZE) - rect.h) / 2;
 			
-			GFX_blitAsset(ASSET_WIFI, NULL, dst, &(SDL_Rect){x,y});
-			ox += ww;
-		}
-		GFX_blitBattery(dst, &(SDL_Rect){ox,oy});
-	}
+// 			GFX_blitAsset(ASSET_WIFI, NULL, dst, &(SDL_Rect){x,y});
+// 			ox += ww;
+// 		}
+// 		GFX_blitBattery(dst, &(SDL_Rect){ox,oy});
+// 	}
 	
-	return ow;
-}
-void GFX_blitHardwareHints(SDL_Surface* dst, int show_setting) {
-	if (BTN_MOD_VOLUME==BTN_SELECT && BTN_MOD_BRIGHTNESS==BTN_START) {
-		if (show_setting==1) GFX_blitButtonGroup((char*[]){ "SELECT","VOLUME",  NULL }, 0, dst, 0);
-		else GFX_blitButtonGroup((char*[]){ "START","BRIGHTNESS",  NULL }, 0, dst, 0);
-	}
-	else {
-		if (show_setting==1) GFX_blitButtonGroup((char*[]){ BRIGHTNESS_BUTTON_LABEL,"BRIGHTNESS",  NULL }, 0, dst, 0);
-		else GFX_blitButtonGroup((char*[]){ "MENU","BRIGHTNESS",  NULL }, 0, dst, 0);
-	}
+// 	return ow;
+// }
+// void GFX_blitHardwareHints(SDL_Surface* dst, int show_setting) {
+// 	if (BTN_MOD_VOLUME==BTN_SELECT && BTN_MOD_BRIGHTNESS==BTN_START) {
+// 		if (show_setting==1) GFX_blitButtonGroup((char*[]){ "SELECT","VOLUME",  NULL }, 0, dst, 0);
+// 		else GFX_blitButtonGroup((char*[]){ "START","BRIGHTNESS",  NULL }, 0, dst, 0);
+// 	}
+// 	else {
+// 		if (show_setting==1) GFX_blitButtonGroup((char*[]){ BRIGHTNESS_BUTTON_LABEL,"BRIGHTNESS",  NULL }, 0, dst, 0);
+// 		else GFX_blitButtonGroup((char*[]){ "MENU","BRIGHTNESS",  NULL }, 0, dst, 0);
+// 	}
 	
-}
+// }
 
 int GFX_blitButtonGroup(char** pairs, int primary, SDL_Surface* dst, int align_right) {
 	int ox;
@@ -915,7 +916,7 @@ void GFX_blitText(TTF_Font* font, char* str, int leading, SDL_Color color, SDL_S
 // implementation, rewritten 
 // to (try to) understand it 
 // better
-
+/*
 #define MAX_SAMPLE_RATE 48000
 #define BATCH_SIZE 100
 #ifndef SAMPLES
@@ -1063,58 +1064,58 @@ size_t SND_batchSamples(const SND_Frame* frames, size_t frame_count) { // plat_s
 	SDL_UnlockAudio();
 	
 	return consumed;
-}
+}*/
 
-void SND_init(double sample_rate, double frame_rate) { // plat_sound_init
-	LOG_info("SND_init\n");
+// void SND_init(double sample_rate, double frame_rate) { // plat_sound_init
+// 	LOG_info("SND_init\n");
 	
-	SDL_InitSubSystem(SDL_INIT_AUDIO);
+// 	SDL_InitSubSystem(SDL_INIT_AUDIO);
 	
-#if defined(USE_SDL2)
-	LOG_info("Available audio drivers:\n");
-	for (int i=0; i<SDL_GetNumAudioDrivers(); i++) {
-		LOG_info("- %s\n", SDL_GetAudioDriver(i));
-	}
-	LOG_info("Current audio driver: %s\n", SDL_GetCurrentAudioDriver());
-#endif	
+// #if defined(USE_SDL2)
+// 	LOG_info("Available audio drivers:\n");
+// 	for (int i=0; i<SDL_GetNumAudioDrivers(); i++) {
+// 		LOG_info("- %s\n", SDL_GetAudioDriver(i));
+// 	}
+// 	LOG_info("Current audio driver: %s\n", SDL_GetCurrentAudioDriver());
+// #endif	
 	
-	memset(&snd, 0, sizeof(struct SND_Context));
-	snd.frame_rate = frame_rate;
+// 	memset(&snd, 0, sizeof(struct SND_Context));
+// 	snd.frame_rate = frame_rate;
 
-	SDL_AudioSpec spec_in;
-	SDL_AudioSpec spec_out;
+// 	SDL_AudioSpec spec_in;
+// 	SDL_AudioSpec spec_out;
 
-	spec_in.freq = PLAT_pickSampleRate(sample_rate, MAX_SAMPLE_RATE);
-	spec_in.format = AUDIO_S16;
-	spec_in.channels = 2;
-	spec_in.samples = SAMPLES;
-	spec_in.callback = SND_audioCallback;
+// 	spec_in.freq = PLAT_pickSampleRate(sample_rate, MAX_SAMPLE_RATE);
+// 	spec_in.format = AUDIO_S16;
+// 	spec_in.channels = 2;
+// 	spec_in.samples = SAMPLES;
+// 	spec_in.callback = SND_audioCallback;
 	
-	if (SDL_OpenAudio(&spec_in, &spec_out)<0) LOG_info("SDL_OpenAudio error: %s\n", SDL_GetError());
+// 	if (SDL_OpenAudio(&spec_in, &spec_out)<0) LOG_info("SDL_OpenAudio error: %s\n", SDL_GetError());
 	
-	snd.buffer_seconds = 5;
-	snd.sample_rate_in  = sample_rate;
-	snd.sample_rate_out = spec_out.freq;
+// 	snd.buffer_seconds = 5;
+// 	snd.sample_rate_in  = sample_rate;
+// 	snd.sample_rate_out = spec_out.freq;
 	
-	SND_selectResampler();
-	SND_resizeBuffer();
+// 	SND_selectResampler();
+// 	SND_resizeBuffer();
 	
-	SDL_PauseAudio(0);
+// 	SDL_PauseAudio(0);
 
-	LOG_info("sample rate: %i (req) %i (rec) [samples %i]\n", snd.sample_rate_in, snd.sample_rate_out, SAMPLES);
-	snd.initialized = 1;
-}
-void SND_quit(void) { // plat_sound_finish
-	if (!snd.initialized) return;
+// 	LOG_info("sample rate: %i (req) %i (rec) [samples %i]\n", snd.sample_rate_in, snd.sample_rate_out, SAMPLES);
+// 	snd.initialized = 1;
+// }
+// void SND_quit(void) { // plat_sound_finish
+// 	if (!snd.initialized) return;
 	
-	SDL_PauseAudio(1);
-	SDL_CloseAudio();
+// 	SDL_PauseAudio(1);
+// 	SDL_CloseAudio();
 	
-	if (snd.buffer) {
-		free(snd.buffer);
-		snd.buffer = NULL;
-	}
-}
+// 	if (snd.buffer) {
+// 		free(snd.buffer);
+// 		snd.buffer = NULL;
+// 	}
+// }
 
 ///////////////////////////////
 
@@ -1325,7 +1326,7 @@ FALLBACK_IMPLEMENTATION void PLAT_pollInput(void) {
 				btn = BTN_NONE;
 			}
 		}
-		else if (event.type==SDL_QUIT) PWR_powerOff();
+		// else if (event.type==SDL_QUIT) PWR_powerOff();
 		
 		if (btn==BTN_NONE) continue;
 		
@@ -1442,256 +1443,256 @@ int VIB_getStrength(void) {
 
 ///////////////////////////////
 
-static void PWR_initOverlay(void) {
-	// setup surface
-	pwr.overlay = PLAT_initOverlay();
+// static void PWR_initOverlay(void) {
+// 	// setup surface
+// 	pwr.overlay = PLAT_initOverlay();
 
-	// draw battery
-	SDLX_SetAlpha(gfx.assets, 0,0);
-	GFX_blitAsset(ASSET_BLACK_PILL, NULL, pwr.overlay, NULL);
-	SDLX_SetAlpha(gfx.assets, SDL_SRCALPHA,0);
-	GFX_blitBattery(pwr.overlay, NULL);
-}
+// 	// draw battery
+// 	SDLX_SetAlpha(gfx.assets, 0,0);
+// 	GFX_blitAsset(ASSET_BLACK_PILL, NULL, pwr.overlay, NULL);
+// 	SDLX_SetAlpha(gfx.assets, SDL_SRCALPHA,0);
+// 	GFX_blitBattery(pwr.overlay, NULL);
+// }
 
-static void PWR_updateBatteryStatus(void) {
-	PLAT_getBatteryStatus(&pwr.is_charging, &pwr.charge);
-	PLAT_enableOverlay(pwr.should_warn && pwr.charge<=PWR_LOW_CHARGE);
-}
+// static void PWR_updateBatteryStatus(void) {
+// 	PLAT_getBatteryStatus(&pwr.is_charging, &pwr.charge);
+// 	PLAT_enableOverlay(pwr.should_warn && pwr.charge<=PWR_LOW_CHARGE);
+// }
 
-static void* PWR_monitorBattery(void *arg) {
-	while(1) {
-		// TODO: the frequency of checking could depend on whether 
-		// we're in game (less frequent) or menu (more frequent)
-		sleep(5);
-		PWR_updateBatteryStatus();
-	}
-	return NULL;
-}
+// static void* PWR_monitorBattery(void *arg) {
+// 	while(1) {
+// 		// TODO: the frequency of checking could depend on whether 
+// 		// we're in game (less frequent) or menu (more frequent)
+// 		sleep(5);
+// 		PWR_updateBatteryStatus();
+// 	}
+// 	return NULL;
+// }
 
-void PWR_init(void) {
-	pwr.can_sleep = 1;
-	pwr.can_poweroff = 1;
-	pwr.can_autosleep = 1;
+// void PWR_init(void) {
+// 	pwr.can_sleep = 1;
+// 	pwr.can_poweroff = 1;
+// 	pwr.can_autosleep = 1;
 	
-	pwr.requested_sleep = 0;
-	pwr.requested_wake = 0;
+// 	pwr.requested_sleep = 0;
+// 	pwr.requested_wake = 0;
 	
-	pwr.should_warn = 0;
-	pwr.charge = PWR_LOW_CHARGE;
+// 	pwr.should_warn = 0;
+// 	pwr.charge = PWR_LOW_CHARGE;
 	
-	PWR_initOverlay();
+// 	PWR_initOverlay();
 
-	PWR_updateBatteryStatus();
-	pthread_create(&pwr.battery_pt, NULL, &PWR_monitorBattery, NULL);
-	pwr.initialized = 1;
-}
-void PWR_quit(void) {
-	if (!pwr.initialized) return;
+// 	PWR_updateBatteryStatus();
+// 	pthread_create(&pwr.battery_pt, NULL, &PWR_monitorBattery, NULL);
+// 	pwr.initialized = 1;
+// }
+// void PWR_quit(void) {
+// 	if (!pwr.initialized) return;
 	
-	PLAT_quitOverlay();
+// 	PLAT_quitOverlay();
 	
-	// cancel battery thread
-	pthread_cancel(pwr.battery_pt);
-	pthread_join(pwr.battery_pt, NULL);
-}
-void PWR_warn(int enable) {
-	pwr.should_warn = enable;
-	PLAT_enableOverlay(pwr.should_warn && pwr.charge<=PWR_LOW_CHARGE);
-}
+// 	// cancel battery thread
+// 	pthread_cancel(pwr.battery_pt);
+// 	pthread_join(pwr.battery_pt, NULL);
+// }
+// void PWR_warn(int enable) {
+// 	pwr.should_warn = enable;
+// 	PLAT_enableOverlay(pwr.should_warn && pwr.charge<=PWR_LOW_CHARGE);
+// }
 
-int PWR_ignoreSettingInput(int btn, int show_setting) {
-	return show_setting && (btn==BTN_MOD_PLUS || btn==BTN_MOD_MINUS);
-}
+// int PWR_ignoreSettingInput(int btn, int show_setting) {
+// 	return show_setting && (btn==BTN_MOD_PLUS || btn==BTN_MOD_MINUS);
+// }
 
-void PWR_update(int* _dirty, int* _show_setting, PWR_callback_t before_sleep, PWR_callback_t after_sleep) {
-	int dirty = _dirty ? *_dirty : 0;
-	int show_setting = _show_setting ? *_show_setting : 0;
+// void PWR_update(int* _dirty, int* _show_setting, PWR_callback_t before_sleep, PWR_callback_t after_sleep) {
+// 	int dirty = _dirty ? *_dirty : 0;
+// 	int show_setting = _show_setting ? *_show_setting : 0;
 	
-	static uint32_t last_input_at = 0; // timestamp of last input (autosleep)
-	static uint32_t checked_charge_at = 0; // timestamp of last time checking charge
-	static uint32_t setting_shown_at = 0; // timestamp when settings started being shown
-	static uint32_t power_pressed_at = 0; // timestamp when power button was just pressed
-	static uint32_t mod_unpressed_at = 0; // timestamp of last time settings modifier key was NOT down
-	static uint32_t was_muted = -1;
-	if (was_muted==-1) was_muted = GetMute();
+// 	static uint32_t last_input_at = 0; // timestamp of last input (autosleep)
+// 	static uint32_t checked_charge_at = 0; // timestamp of last time checking charge
+// 	static uint32_t setting_shown_at = 0; // timestamp when settings started being shown
+// 	static uint32_t power_pressed_at = 0; // timestamp when power button was just pressed
+// 	static uint32_t mod_unpressed_at = 0; // timestamp of last time settings modifier key was NOT down
+// 	static uint32_t was_muted = -1;
+// 	if (was_muted==-1) was_muted = GetMute();
 	
-	static int was_charging = -1;
-	if (was_charging==-1) was_charging = pwr.is_charging;
+// 	static int was_charging = -1;
+// 	if (was_charging==-1) was_charging = pwr.is_charging;
 
-	uint32_t now = SDL_GetTicks();
-	if (was_charging || PAD_anyPressed() || last_input_at==0) last_input_at = now;
+// 	uint32_t now = SDL_GetTicks();
+// 	if (was_charging || PAD_anyPressed() || last_input_at==0) last_input_at = now;
 	
-	#define CHARGE_DELAY 1000
-	if (dirty || now-checked_charge_at>=CHARGE_DELAY) {
-		int is_charging = pwr.is_charging;
-		if (was_charging!=is_charging) {
-			was_charging = is_charging;
-			dirty = 1;
-		}
-		checked_charge_at = now;
-	}
+// 	#define CHARGE_DELAY 1000
+// 	if (dirty || now-checked_charge_at>=CHARGE_DELAY) {
+// 		int is_charging = pwr.is_charging;
+// 		if (was_charging!=is_charging) {
+// 			was_charging = is_charging;
+// 			dirty = 1;
+// 		}
+// 		checked_charge_at = now;
+// 	}
 	
-	if (PAD_justReleased(BTN_POWEROFF) || (power_pressed_at && now-power_pressed_at>=1000)) {
-		if (before_sleep) before_sleep();
-		PWR_powerOff();
-	}
+// 	// if (PAD_justReleased(BTN_POWEROFF) || (power_pressed_at && now-power_pressed_at>=1000)) {
+// 	// 	if (before_sleep) before_sleep();
+// 	// 	PWR_powerOff();
+// 	// }
 	
-	if (PAD_justPressed(BTN_POWER)) {
-		power_pressed_at = now;
-	}
+// 	if (PAD_justPressed(BTN_POWER)) {
+// 		power_pressed_at = now;
+// 	}
 	
-	#define SLEEP_DELAY 30000 // 30 seconds
-	if (now-last_input_at>=SLEEP_DELAY && PWR_preventAutosleep()) last_input_at = now;
+// 	#define SLEEP_DELAY 30000 // 30 seconds
+// 	if (now-last_input_at>=SLEEP_DELAY && PWR_preventAutosleep()) last_input_at = now;
 	
-	if (
-		pwr.requested_sleep || // hardware requested sleep
-		now-last_input_at>=SLEEP_DELAY || // autosleep
-		(pwr.can_sleep && PAD_justReleased(BTN_SLEEP)) // manual sleep
-	) {
-		pwr.requested_sleep = 0;
-		if (before_sleep) before_sleep();
-		PWR_fauxSleep();
-		if (after_sleep) after_sleep();
+// 	if (
+// 		pwr.requested_sleep || // hardware requested sleep
+// 		now-last_input_at>=SLEEP_DELAY || // autosleep
+// 		(pwr.can_sleep && PAD_justReleased(BTN_SLEEP)) // manual sleep
+// 	) {
+// 		pwr.requested_sleep = 0;
+// 		if (before_sleep) before_sleep();
+// 		PWR_fauxSleep();
+// 		if (after_sleep) after_sleep();
 		
-		last_input_at = now = SDL_GetTicks();
-		power_pressed_at = 0;
-		dirty = 1;
-	}
+// 		last_input_at = now = SDL_GetTicks();
+// 		power_pressed_at = 0;
+// 		dirty = 1;
+// 	}
 	
-	int was_dirty = dirty; // dirty list (not including settings/battery)
+// 	int was_dirty = dirty; // dirty list (not including settings/battery)
 	
-	// TODO: only delay hiding setting changes if that setting didn't require a modifier button be held, otherwise release as soon as modifier is released
+// 	// TODO: only delay hiding setting changes if that setting didn't require a modifier button be held, otherwise release as soon as modifier is released
 	
-	int delay_settings = BTN_MOD_BRIGHTNESS==BTN_MENU; // when both volume and brighness require a modifier hide settings as soon as it is released
-	#define SETTING_DELAY 500
-	if (show_setting && (now-setting_shown_at>=SETTING_DELAY || !delay_settings) && !PAD_isPressed(BTN_MOD_VOLUME) && !PAD_isPressed(BTN_MOD_BRIGHTNESS)) {
-		show_setting = 0;
-		dirty = 1;
-	}
+// 	int delay_settings = BTN_MOD_BRIGHTNESS==BTN_MENU; // when both volume and brighness require a modifier hide settings as soon as it is released
+// 	#define SETTING_DELAY 500
+// 	if (show_setting && (now-setting_shown_at>=SETTING_DELAY || !delay_settings) && !PAD_isPressed(BTN_MOD_VOLUME) && !PAD_isPressed(BTN_MOD_BRIGHTNESS)) {
+// 		show_setting = 0;
+// 		dirty = 1;
+// 	}
 	
-	if (!show_setting && !PAD_isPressed(BTN_MOD_VOLUME) && !PAD_isPressed(BTN_MOD_BRIGHTNESS)) {
-		mod_unpressed_at = now; // this feels backwards but is correct
-	}
+// 	if (!show_setting && !PAD_isPressed(BTN_MOD_VOLUME) && !PAD_isPressed(BTN_MOD_BRIGHTNESS)) {
+// 		mod_unpressed_at = now; // this feels backwards but is correct
+// 	}
 	
-	#define MOD_DELAY 250
-	if (
-		(
-			(PAD_isPressed(BTN_MOD_VOLUME) || PAD_isPressed(BTN_MOD_BRIGHTNESS)) && 
-			(!delay_settings || now-mod_unpressed_at>=MOD_DELAY)
-		) || 
-		((!BTN_MOD_VOLUME || !BTN_MOD_BRIGHTNESS) && (PAD_justRepeated(BTN_MOD_PLUS) || PAD_justRepeated(BTN_MOD_MINUS)))
-	) {
-		setting_shown_at = now;
-		if (PAD_isPressed(BTN_MOD_BRIGHTNESS)) {
-			show_setting = 1;
-		}
-		else {
-			show_setting = 2;
-		}
-	}
+// 	#define MOD_DELAY 250
+// 	if (
+// 		(
+// 			(PAD_isPressed(BTN_MOD_VOLUME) || PAD_isPressed(BTN_MOD_BRIGHTNESS)) && 
+// 			(!delay_settings || now-mod_unpressed_at>=MOD_DELAY)
+// 		) || 
+// 		((!BTN_MOD_VOLUME || !BTN_MOD_BRIGHTNESS) && (PAD_justRepeated(BTN_MOD_PLUS) || PAD_justRepeated(BTN_MOD_MINUS)))
+// 	) {
+// 		setting_shown_at = now;
+// 		if (PAD_isPressed(BTN_MOD_BRIGHTNESS)) {
+// 			show_setting = 1;
+// 		}
+// 		else {
+// 			show_setting = 2;
+// 		}
+// 	}
 	
-	int muted = GetMute();
-	if (muted!=was_muted) {
-		was_muted = muted;
-		show_setting = 2;
-		setting_shown_at = now;
-	}
+// 	int muted = GetMute();
+// 	if (muted!=was_muted) {
+// 		was_muted = muted;
+// 		show_setting = 2;
+// 		setting_shown_at = now;
+// 	}
 	
-	if (show_setting) dirty = 1; // shm is slow or keymon is catching input on the next frame
-	if (_dirty) *_dirty = dirty;
-	if (_show_setting) *_show_setting = show_setting;
-}
+// 	if (show_setting) dirty = 1; // shm is slow or keymon is catching input on the next frame
+// 	if (_dirty) *_dirty = dirty;
+// 	if (_show_setting) *_show_setting = show_setting;
+// }
 
-// TODO: this isn't whether it can sleep but more if it should sleep in response to the sleep button
-void PWR_disableSleep(void) {
-	pwr.can_sleep = 0;
-}
-void PWR_enableSleep(void) {
-	pwr.can_sleep = 1;
-}
+// // TODO: this isn't whether it can sleep but more if it should sleep in response to the sleep button
+// void PWR_disableSleep(void) {
+// 	pwr.can_sleep = 0;
+// }
+// void PWR_enableSleep(void) {
+// 	pwr.can_sleep = 1;
+// }
 
-void PWR_disablePowerOff(void) {
-	pwr.can_poweroff = 0;
-}
-void PWR_powerOff(void) {
-	if (pwr.can_poweroff) {
+// void PWR_disablePowerOff(void) {
+// 	pwr.can_poweroff = 0;
+// }
+// void PWR_powerOff(void) {
+// 	if (pwr.can_poweroff) {
 		
-		int w = FIXED_WIDTH;
-		int h = FIXED_HEIGHT;
-		int p = FIXED_PITCH;
-		if (GetHDMI()) {
-			w = HDMI_WIDTH;
-			h = HDMI_HEIGHT;
-			p = HDMI_PITCH;
-		}
-		gfx.screen = GFX_resize(w,h,p);
+// 		int w = FIXED_WIDTH;
+// 		int h = FIXED_HEIGHT;
+// 		int p = FIXED_PITCH;
+// 		if (GetHDMI()) {
+// 			w = HDMI_WIDTH;
+// 			h = HDMI_HEIGHT;
+// 			p = HDMI_PITCH;
+// 		}
+// 		gfx.screen = GFX_resize(w,h,p);
 		
-		char* msg;
-		if (HAS_POWER_BUTTON || HAS_POWEROFF_BUTTON) msg = exists(AUTO_RESUME_PATH) ? "Quicksave created,\npowering off" : "Powering off";
-		else msg = exists(AUTO_RESUME_PATH) ? "Quicksave created,\npower off now" : "Power off now";
+// 		char* msg;
+// 		// if (HAS_POWER_BUTTON || HAS_POWEROFF_BUTTON) msg = exists(AUTO_RESUME_PATH) ? "Quicksave created,\npowering off" : "Powering off";
+// 		// else msg = exists(AUTO_RESUME_PATH) ? "Quicksave created,\npower off now" : "Power off now";
 		
-		// LOG_info("PWR_powerOff %s (%ix%i)\n", gfx.screen, gfx.screen->w, gfx.screen->h);
+// 		// LOG_info("PWR_powerOff %s (%ix%i)\n", gfx.screen, gfx.screen->w, gfx.screen->h);
 		
-		// TODO: for some reason screen's dimensions end up being 0x0 in GFX_blitMessage...
-		PLAT_clearVideo(gfx.screen);
-		GFX_blitMessage(font.large, msg, gfx.screen,&(SDL_Rect){0,0,gfx.screen->w,gfx.screen->h}); //, NULL);
-		GFX_flip(gfx.screen);
-		PLAT_powerOff();
-	}
-}
+// 		// TODO: for some reason screen's dimensions end up being 0x0 in GFX_blitMessage...
+// 		PLAT_clearVideo(gfx.screen);
+// 		GFX_blitMessage(font.large, msg, gfx.screen,&(SDL_Rect){0,0,gfx.screen->w,gfx.screen->h}); //, NULL);
+// 		GFX_flip(gfx.screen);
+// 		PLAT_powerOff();
+// 	}
+// }
 
-static void PWR_enterSleep(void) {
-	SDL_PauseAudio(1);
-	if (GetHDMI()) {
-		PLAT_clearVideo(gfx.screen);
-		PLAT_flip(gfx.screen, 0);
-	}
-	else {
-		SetRawVolume(MUTE_VOLUME_RAW);
-		PLAT_enableBacklight(0);
-	}
-	system("killall -STOP keymon.elf");
+// static void PWR_enterSleep(void) {
+// 	SDL_PauseAudio(1);
+// 	if (GetHDMI()) {
+// 		PLAT_clearVideo(gfx.screen);
+// 		PLAT_flip(gfx.screen, 0);
+// 	}
+// 	else {
+// 		SetRawVolume(MUTE_VOLUME_RAW);
+// 		PLAT_enableBacklight(0);
+// 	}
+// 	system("killall -STOP keymon.elf");
 	
-	sync();
-}
-static void PWR_exitSleep(void) {
-	system("killall -CONT keymon.elf");
-	if (GetHDMI()) {
-		// buh
-	}
-	else {
-		PLAT_enableBacklight(1);
-		SetVolume(GetVolume());
-	}
-	SDL_PauseAudio(0);
+// 	sync();
+// }
+// static void PWR_exitSleep(void) {
+// 	system("killall -CONT keymon.elf");
+// 	if (GetHDMI()) {
+// 		// buh
+// 	}
+// 	else {
+// 		PLAT_enableBacklight(1);
+// 		SetVolume(GetVolume());
+// 	}
+// 	SDL_PauseAudio(0);
 	
-	sync();
-}
+// 	sync();
+// }
 
-static void PWR_waitForWake(void) {
-	uint32_t sleep_ticks = SDL_GetTicks();
-	while (!PAD_wake()) {
-		if (pwr.requested_wake) {
-			pwr.requested_wake = 0;
-			break;
-		}
-		SDL_Delay(200);
-		if (pwr.can_poweroff && SDL_GetTicks()-sleep_ticks>=120000) { // increased to two minutes
-			if (pwr.is_charging) sleep_ticks += 60000; // check again in a minute
-			else PWR_powerOff();
-		}
-	}
+// static void PWR_waitForWake(void) {
+// 	uint32_t sleep_ticks = SDL_GetTicks();
+// 	while (!PAD_wake()) {
+// 		if (pwr.requested_wake) {
+// 			pwr.requested_wake = 0;
+// 			break;
+// 		}
+// 		SDL_Delay(200);
+// 		if (pwr.can_poweroff && SDL_GetTicks()-sleep_ticks>=120000) { // increased to two minutes
+// 			if (pwr.is_charging) sleep_ticks += 60000; // check again in a minute
+// 			else PWR_powerOff();
+// 		}
+// 	}
 	
-	return;
-}
-void PWR_fauxSleep(void) {
-	GFX_clear(gfx.screen);
-	PAD_reset();
-	PWR_enterSleep();
-	PWR_waitForWake();
-	PWR_exitSleep();
-	PAD_reset();
-}
+// 	return;
+// }
+// void PWR_fauxSleep(void) {
+// 	GFX_clear(gfx.screen);
+// 	PAD_reset();
+// 	PWR_enterSleep();
+// 	PWR_waitForWake();
+// 	PWR_exitSleep();
+// 	PAD_reset();
+// }
 
 void PWR_disableAutosleep(void) {
 	pwr.can_autosleep = 0;
@@ -1700,7 +1701,7 @@ void PWR_enableAutosleep(void) {
 	pwr.can_autosleep = 1;
 }
 int PWR_preventAutosleep(void) {
-	return pwr.is_charging || !pwr.can_autosleep || GetHDMI();
+	return pwr.is_charging || !pwr.can_autosleep;
 }
 
 // updated by PWR_updateBatteryStatus()

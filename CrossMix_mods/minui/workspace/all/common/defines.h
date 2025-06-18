@@ -3,33 +3,33 @@
 
 #include "platform.h"
 
-#define VOLUME_MIN 		0
-#define VOLUME_MAX 		20
-#define BRIGHTNESS_MIN 	0
-#define BRIGHTNESS_MAX 	10
+// #define VOLUME_MIN 		0
+// #define VOLUME_MAX 		20
+// #define BRIGHTNESS_MIN 	0
+// #define BRIGHTNESS_MAX 	10
 
 #define MAX_PATH 512
 
-#define ROMS_PATH SDCARD_PATH "/Roms"
-#define ROOT_SYSTEM_PATH SDCARD_PATH "/.system/"
-#define SYSTEM_PATH SDCARD_PATH "/.system/" PLATFORM
-#define RES_PATH SDCARD_PATH "/.system/res"
-#define FONT_PATH RES_PATH "/BPreplayBold-unhinted.otf"
-#define USERDATA_PATH SDCARD_PATH "/.userdata/" PLATFORM
-#define SHARED_USERDATA_PATH SDCARD_PATH "/.userdata/shared"
-#define PAKS_PATH SYSTEM_PATH "/paks"
-#define RECENT_PATH SHARED_USERDATA_PATH "/.minui/recent.txt"
-#define SIMPLE_MODE_PATH SHARED_USERDATA_PATH "/enable-simple-mode"
-#define AUTO_RESUME_PATH SHARED_USERDATA_PATH "/.minui/auto_resume.txt"
-#define AUTO_RESUME_SLOT 9
+// #define ROMS_PATH SDCARD_PATH "/Roms"
+#define ROOT_SYSTEM_PATH SDCARD_PATH "/System/resources/"
+#define SYSTEM_PATH SDCARD_PATH "/System/resources/" PLATFORM
+#define RES_PATH SDCARD_PATH "/System/resources"
+#define FONT_PATH RES_PATH "/DejaVuSans.ttf"
+// #define USERDATA_PATH SDCARD_PATH "/.userdata/" PLATFORM
+// #define SHARED_USERDATA_PATH SDCARD_PATH "/.userdata/shared"
+// #define PAKS_PATH SYSTEM_PATH "/paks"
+// #define RECENT_PATH SHARED_USERDATA_PATH "/.minui/recent.txt"
+// #define SIMPLE_MODE_PATH SHARED_USERDATA_PATH "/enable-simple-mode"
+// #define AUTO_RESUME_PATH SHARED_USERDATA_PATH "/.minui/auto_resume.txt"
+// #define AUTO_RESUME_SLOT 9
 
-#define FAUX_RECENT_PATH SDCARD_PATH "/Recently Played"
-#define COLLECTIONS_PATH SDCARD_PATH "/Collections"
+// #define FAUX_RECENT_PATH SDCARD_PATH "/Recently Played"
+// #define COLLECTIONS_PATH SDCARD_PATH "/Collections"
 
-#define LAST_PATH "/tmp/last.txt" // transient
-#define CHANGE_DISC_PATH "/tmp/change_disc.txt"
-#define RESUME_SLOT_PATH "/tmp/resume_slot.txt"
-#define NOUI_PATH "/tmp/noui"
+// #define LAST_PATH "/tmp/last.txt" // transient
+// #define CHANGE_DISC_PATH "/tmp/change_disc.txt"
+// #define RESUME_SLOT_PATH "/tmp/resume_slot.txt"
+// #define NOUI_PATH "/tmp/noui"
 
 #define TRIAD_WHITE 		0xff,0xff,0xff
 #define TRIAD_BLACK 		0x00,0x00,0x00

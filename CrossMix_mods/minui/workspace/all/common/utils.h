@@ -10,8 +10,8 @@ int containsString(char* haystack, char* needle);
 int hide(char* file_name);
 
 void getDisplayName(const char* in_name, char* out_name);
-void getEmuName(const char* in_name, char* out_name);
-void getEmuPath(char* emu_name, char* pak_path);
+// void getEmuName(const char* in_name, char* out_name);
+// void getEmuPath(char* emu_name, char* pak_path);
 
 void normalizeNewline(char* line);
 void trimTrailingNewlines(char* line);
