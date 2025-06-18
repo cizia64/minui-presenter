@@ -252,6 +252,8 @@ struct Message
 
 void strtrim(char *s)
 {
+    if (!s) return;  // Protection against NULL pointer
+
     char *p = s;
     int l = strlen(p);
 
@@ -260,7 +262,7 @@ void strtrim(char *s)
         return;
     }
 
-    while (isspace(p[l - 1]))
+    while (l > 0 && isspace(p[l - 1]))  // Added bound check
     {
         p[--l] = 0;
     }
@@ -271,7 +273,8 @@ void strtrim(char *s)
         --l;
     }
 
-    memmove(s, p, l + 1);
+    if (p != s)  // Only move if needed
+        memmove(s, p, l + 1);
 }
 
 char *read_stdin()
@@ -285,17 +288,29 @@ char *read_stdin()
 
     while ((bytes_read = fread(buffer, 1, sizeof(buffer), stdin)) > 0)
     {
+        char *new_contents;
         if (stdin_contents == NULL)
         {
             stdin_size = bytes_read * 2;
-            stdin_contents = malloc(stdin_size);
+            new_contents = malloc(stdin_size);
         }
         else if (stdin_used + bytes_read > stdin_size)
         {
             stdin_size *= 2;
-            stdin_contents = realloc(stdin_contents, stdin_size);
+            new_contents = realloc(stdin_contents, stdin_size);
+        }
+        else
+        {
+            new_contents = stdin_contents;
         }
 
+        if (new_contents == NULL) {
+            free(stdin_contents);  // Free previously allocated memory
+            log_error("Memory allocation failed in read_stdin");
+            return NULL;
+        }
+
+        stdin_contents = new_contents;
         memcpy(stdin_contents + stdin_used, buffer, bytes_read);
         stdin_used += bytes_read;
     }
@@ -303,9 +318,16 @@ char *read_stdin()
     // Null terminate the string
     if (stdin_contents)
     {
+        char *new_contents;
         if (stdin_used == stdin_size)
         {
-            stdin_contents = realloc(stdin_contents, stdin_size + 1);
+            new_contents = realloc(stdin_contents, stdin_size + 1);
+            if (new_contents == NULL) {
+                free(stdin_contents);
+                log_error("Memory allocation failed in read_stdin");
+                return NULL;
+            }
+            stdin_contents = new_contents;
         }
         stdin_contents[stdin_used] = '\0';
     }
@@ -396,7 +418,9 @@ struct ItemsState *ItemsState_New(const char *filename, const char *item_key, co
         state->items[i].image_exists = default_background_image != NULL && access(default_background_image, F_OK) != -1;
         if (background_image != NULL)
         {
-            state->items[i].background_image = strdup(background_image);
+            char *temp = strdup(background_image);
+            free(state->items[i].background_image);  // Free previous allocation
+            state->items[i].background_image = temp;
             state->items[i].image_exists = access(background_image, F_OK) != -1;
         }
 
