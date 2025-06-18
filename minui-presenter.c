@@ -187,7 +187,14 @@ struct AppState
     struct ItemsState *items_state;
 };
 
-#define MAX_MESSAGES 32  // Augmentation de la limite de lignes
+#define MAX_MESSAGES 32
+
+// Options globales
+struct GlobalOptions {
+    bool preserve_framebuffer;  // Si true, ne pas appeler GFX_quit() à la sortie
+} g_options = {
+    .preserve_framebuffer = false
+};
 
 struct Message
 {
@@ -753,16 +760,24 @@ SDL_Surface *scale_surface(SDL_Surface *surface,
 // draw_screen interprets the app state and draws it to the screen
 void draw_screen(SDL_Surface *screen, struct AppState *state)
 {
-    // render a background color
-    char hex_color[1024] = "#000000";
-    if (state->items_state->items[state->items_state->selected].background_color != NULL)
-    {
-        strncpy(hex_color, state->items_state->items[state->items_state->selected].background_color, sizeof(hex_color));
-    }
+    // Ne pas effacer l'écran si preserve_framebuffer est actif et si un background n'est pas explicitement défini
+    bool should_clear = !g_options.preserve_framebuffer || 
+                       (state->items_state->items[state->items_state->selected].background_color != NULL) ||
+                       (state->items_state->items[state->items_state->selected].background_image != NULL);
 
-    SDL_Color background_color = hex_to_sdl_color(hex_color);
-    uint32_t color = SDL_MapRGBA(screen->format, background_color.r, background_color.g, background_color.b, 255);
-    SDL_FillRect(screen, NULL, color);
+    if (should_clear)
+    {
+        // render a background color
+        char hex_color[1024] = "#000000";
+        if (state->items_state->items[state->items_state->selected].background_color != NULL)
+        {
+            strncpy(hex_color, state->items_state->items[state->items_state->selected].background_color, sizeof(hex_color));
+        }
+
+        SDL_Color background_color = hex_to_sdl_color(hex_color);
+        uint32_t color = SDL_MapRGBA(screen->format, background_color.r, background_color.g, background_color.b, 255);
+        SDL_FillRect(screen, NULL, color);
+    }
 
     // check if there is an image and it is accessible
     if (state->items_state->items[state->items_state->selected].background_image != NULL)
@@ -1129,6 +1144,7 @@ void signal_handler(int signal)
 // - --disable-auto-sleep (default: false)
 // - --horizontal-alignment <left|center|right> (default: center)
 // - --line-spacing <pixels> (default: PADDING)
+// - --preserve-framebuffer (no clear screen between launches)
 // - --inaction-button <button> (default: empty string)
 // - --inaction-text <text> (default: "OTHER")
 // - --inaction-show (default: false)
@@ -1161,6 +1177,7 @@ bool parse_arguments(struct AppState *state, int argc, char *argv[])
         {"font-size-default", required_argument, 0, 'F'},
         {"horizontal-alignment", required_argument, 0, 'h'},
         {"line-spacing", required_argument, 0, 'l'},
+        {"preserve-framebuffer", no_argument, 0, 'p'},
         {"item-key", required_argument, 0, 'K'},
         {"message", required_argument, 0, 'm'},
         {"message-alignment", required_argument, 0, 'M'},
@@ -1174,6 +1191,7 @@ bool parse_arguments(struct AppState *state, int argc, char *argv[])
         {"cancel-show", no_argument, 0, 'X'},
         {"action-show", no_argument, 0, 'Y'},
         {"inaction-show", no_argument, 0, 'Z'},
+        {"preserve-framebuffer", no_argument, 0, 'P'},
         {0, 0, 0, 0}};
 
     int opt;
@@ -1182,7 +1200,7 @@ bool parse_arguments(struct AppState *state, int argc, char *argv[])
     char alignment[1024] = "";
     char horizontal_alignment[1024] = "center";  // default value
     int line_spacing = PADDING;  // default value
-    while ((opt = getopt_long(argc, argv, "a:A:b:B:c:C:d:D:E:f:F:h:i:I:K:l:m:M:t:QPSTUWYXZ", long_options, NULL)) != -1)
+    while ((opt = getopt_long(argc, argv, "a:A:b:B:c:C:d:D:E:f:F:h:i:I:K:l:m:M:pt:QPSTUWYXZ", long_options, NULL)) != -1)
     {
         switch (opt)
         {
@@ -1269,6 +1287,9 @@ bool parse_arguments(struct AppState *state, int argc, char *argv[])
             break;
         case 'Z':
             state->inaction_show = true;
+            break;
+        case 'p':
+            g_options.preserve_framebuffer = true;
             break;
         default:
             return false;
@@ -1648,7 +1669,9 @@ void destruct()
     QuitSettings();
     PWR_quit();
     PAD_quit();
-    GFX_quit();
+    if (!g_options.preserve_framebuffer) {
+        GFX_quit();  // Ne pas nettoyer le framebuffer si l'option est active
+    }
 }
 
 // Nouvelle fonction pour convertir les \n littéraux en vrais retours à la ligne
@@ -1784,8 +1807,11 @@ int main(int argc, char *argv[])
         // redraw the screen if there has been a change
         if (state.redraw)
         {
-            // clear the screen at the beginning of each loop
-            // GFX_clear(screen);
+            // Ne pas nettoyer l'écran au début de chaque boucle si preserve_framebuffer est actif
+            if (!g_options.preserve_framebuffer)
+            {
+                GFX_clear(screen);
+            }
 
             if (state.show_hardware_group)
             {
