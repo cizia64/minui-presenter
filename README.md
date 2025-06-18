@@ -6,8 +6,8 @@ This version introduces some new features for the specific needs of **[CrossMix-
 
 - **Handling Carriage Returns**: Support `\n` for multiline messages.
 - **Horizontal Text Alignment**: Support text alignment with options for **left**, **center**, and **right** alignment.
-- **Line Spacing Control**: Allows you to adjust the line spacing (padding).
-- **Optional Frame Buffer Cleanup**: You can now choose to suppress the automatic frame buffer cleaning upon exit.
+- **Line Spacing Control**: Allows to adjust the line spacing (padding).
+- **Optional Frame Buffer Cleanup**: suppress the automatic frame buffer cleaning upon exit.
 - **Spinner Addition**: A loading spinner can be activated on the last line of the message
 - **Message Scrolling**: Long messages can be scrolled with DPAD, with a scrollbar appearing on the right side for easy navigation.
 
