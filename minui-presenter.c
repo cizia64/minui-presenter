@@ -189,11 +189,39 @@ struct AppState
 
 #define MAX_MESSAGES 32
 
+// Animation spinner
+#define SPINNER_FRAMES 4
+const char* SPINNER_CHARS[SPINNER_FRAMES] = {"|", "/", "-", "\\"};
+struct Spinner {
+    bool active;
+    int current_frame;
+    unsigned long last_update;
+    int x;
+    int y;
+    // Position du dernier message pour le spinner
+    int last_message_x;
+    int last_message_width;
+    int last_message_y;
+    int last_message_height;
+};
+
 // Options globales
 struct GlobalOptions {
-    bool preserve_framebuffer;  // Si true, ne pas appeler GFX_quit() à la sortie
+    bool preserve_framebuffer;
+    struct Spinner spinner;
 } g_options = {
-    .preserve_framebuffer = false
+    .preserve_framebuffer = false,
+    .spinner = {
+        .active = false,
+        .current_frame = 0,
+        .last_update = 0,
+        .x = 0,
+        .y = 0,
+        .last_message_x = 0,
+        .last_message_width = 0,
+        .last_message_y = 0,
+        .last_message_height = 0
+    }
 };
 
 struct Message
@@ -1019,14 +1047,14 @@ void draw_screen(SDL_Surface *screen, struct AppState *state)
         switch (state->items_state->items[state->items_state->selected].horizontal_alignment)
         {
         case HorizontalAlignmentLeft:
-            x_pos = SCALE1(PADDING * 2);  // Marge à gauche
+            x_pos = SCALE1(PADDING * 2);
             break;
         case HorizontalAlignmentRight:
-            x_pos = screen->w - text->w - SCALE1(PADDING * 2);  // Aligné à droite avec marge
+            x_pos = screen->w - text->w - SCALE1(PADDING * 2);
             break;
         case HorizontalAlignmentCenter:
         default:
-            x_pos = (screen->w - text->w) / 2;  // Centré (comportement par défaut)
+            x_pos = (screen->w - text->w) / 2;
             break;
         }
 
@@ -1035,6 +1063,14 @@ void draw_screen(SDL_Surface *screen, struct AppState *state)
             current_message_y + PADDING,
             text->w,
             text->h};
+
+        // Sauvegarder la position du dernier message pour le spinner
+        if (i == message_count) {
+            g_options.spinner.last_message_x = x_pos;
+            g_options.spinner.last_message_width = text->w;
+            g_options.spinner.last_message_y = pos.y;
+            g_options.spinner.last_message_height = text->h;
+        }
 
         if (state->items_state->items[state->items_state->selected].show_pill)
         {
@@ -1178,6 +1214,7 @@ bool parse_arguments(struct AppState *state, int argc, char *argv[])
         {"horizontal-alignment", required_argument, 0, 'h'},
         {"line-spacing", required_argument, 0, 'l'},
         {"preserve-framebuffer", no_argument, 0, 'p'},
+        {"show-spinner", no_argument, 0, 's'},
         {"item-key", required_argument, 0, 'K'},
         {"message", required_argument, 0, 'm'},
         {"message-alignment", required_argument, 0, 'M'},
@@ -1200,7 +1237,7 @@ bool parse_arguments(struct AppState *state, int argc, char *argv[])
     char alignment[1024] = "";
     char horizontal_alignment[1024] = "center";  // default value
     int line_spacing = PADDING;  // default value
-    while ((opt = getopt_long(argc, argv, "a:A:b:B:c:C:d:D:E:f:F:h:i:I:K:l:m:M:pt:QPSTUWYXZ", long_options, NULL)) != -1)
+    while ((opt = getopt_long(argc, argv, "a:A:b:B:c:C:d:D:E:f:F:h:i:I:K:l:m:M:pst:QPSTUWYXZ", long_options, NULL)) != -1)
     {
         switch (opt)
         {
@@ -1290,6 +1327,9 @@ bool parse_arguments(struct AppState *state, int argc, char *argv[])
             break;
         case 'p':
             g_options.preserve_framebuffer = true;
+            break;
+        case 's':
+            g_options.spinner.active = true;
             break;
         default:
             return false;
@@ -1692,6 +1732,54 @@ void convert_escaped_newlines(char *str) {
     *dst = '\0';  // Ensure null termination
 }
 
+// Obtenir le temps actuel en millisecondes
+unsigned long get_current_time_ms() {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+}
+
+// Mettre à jour et dessiner le spinner
+void update_spinner(SDL_Surface *screen) {
+    if (!g_options.spinner.active) return;
+
+    unsigned long current_time = get_current_time_ms();
+    if (current_time - g_options.spinner.last_update >= 100) { // Update every 100ms
+        g_options.spinner.current_frame = (g_options.spinner.current_frame + 1) % SPINNER_FRAMES;
+        g_options.spinner.last_update = current_time;
+    }
+
+    // Position le spinner juste après le dernier message
+    if (g_options.spinner.last_message_width > 0) {
+        // Calcule la position en fonction du dernier message
+        g_options.spinner.x = g_options.spinner.last_message_x + g_options.spinner.last_message_width + SCALE1(10);
+        g_options.spinner.y = g_options.spinner.last_message_y;
+    } else {
+        // Position par défaut si pas de message
+        g_options.spinner.x = screen->w - SCALE1(30);
+        g_options.spinner.y = screen->h - SCALE1(30);
+    }
+
+    TTF_Font* font = TTF_OpenFont(FONT_PATH, SCALE1(20));
+    if (font) {
+        SDL_Color color = {255, 255, 255, 255};  // Blanc
+        SDL_Surface* text = TTF_RenderUTF8_Blended(font, 
+            SPINNER_CHARS[g_options.spinner.current_frame], color);
+        
+        if (text) {
+            SDL_Rect pos = {
+                g_options.spinner.x,
+                g_options.spinner.y + (g_options.spinner.last_message_height - text->h) / 2, // Centrer verticalement par rapport au texte
+                text->w,
+                text->h
+            };
+            SDL_BlitSurface(text, NULL, screen, &pos);
+            SDL_FreeSurface(text);
+        }
+        TTF_CloseFont(font);
+    }
+}
+
 // main is the entry point for the app
 int main(int argc, char *argv[])
 {
@@ -1805,7 +1893,7 @@ int main(int argc, char *argv[])
         handle_input(&state);
 
         // redraw the screen if there has been a change
-        if (state.redraw)
+        if (state.redraw || g_options.spinner.active)  // Force redraw if spinner is active
         {
             // Ne pas nettoyer l'écran au début de chaque boucle si preserve_framebuffer est actif
             if (!g_options.preserve_framebuffer)
@@ -1822,16 +1910,17 @@ int main(int argc, char *argv[])
                 {
                     GFX_blitHardwareHints(screen, show_setting);
                 }
-                else
-                {
-                    GFX_blitButtonGroup((char *[]){BTN_SLEEP == BTN_POWER ? "POWER" : "MENU", "SLEEP", NULL}, 0, screen, 0);
-                }
             }
 
-            // your draw logic goes here
+            // Draw the main content
             draw_screen(screen, &state);
+            
+            // Draw the spinner if active
+            if (g_options.spinner.active) {
+                update_spinner(screen);
+            }
 
-            // Takes the screen buffer and displays it on the screen
+            // sync the screen
             GFX_flip(screen);
         }
         else
