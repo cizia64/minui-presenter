@@ -126,6 +126,15 @@ struct ItemsState
     int selected;
 };
 
+// Structure pour gérer le scroll du texte
+struct ScrollState {
+    int scroll_position;    // Position actuelle du scroll (en pixels)
+    int content_height;     // Hauteur totale du contenu
+    int viewport_height;    // Hauteur visible
+    bool needs_scroll;      // Indique si le contenu nécessite un scroll
+    bool scroll_to_bottom;  // Indique si on doit scroller au bas du texte
+};
+
 // AppState holds the current state of the application
 struct AppState
 {
@@ -185,6 +194,7 @@ struct AppState
     struct Fonts fonts;
     // the display states
     struct ItemsState *items_state;
+    struct ScrollState scroll_state;
 };
 
 #define MAX_MESSAGES 32
@@ -672,6 +682,29 @@ void handle_input(struct AppState *state)
         return;
     }
 
+    // Gestion du scroll avec les boutons haut/bas
+    int scroll_speed = SCALE1(20); // Vitesse de défilement en pixels
+
+    if (PAD_justRepeated(BTN_UP) || PAD_justPressed(BTN_UP))
+    {
+        if (state->scroll_state.needs_scroll)
+        {
+            state->scroll_state.scroll_position = MAX(0, state->scroll_state.scroll_position - scroll_speed);
+            state->redraw = 1;
+            state->scroll_state.scroll_to_bottom = false;
+        }
+    }
+    else if (PAD_justRepeated(BTN_DOWN) || PAD_justPressed(BTN_DOWN))
+    {
+        if (state->scroll_state.needs_scroll)
+        {
+            int max_scroll = state->scroll_state.content_height - state->scroll_state.viewport_height;
+            state->scroll_state.scroll_position = MIN(max_scroll, state->scroll_state.scroll_position + scroll_speed);
+            state->redraw = 1;
+            state->scroll_state.scroll_to_bottom = false;
+        }
+    }
+    
     if (PAD_justRepeated(BTN_LEFT))
     {
         if (state->items_state->selected == 0 && !PAD_justPressed(BTN_LEFT))
@@ -686,6 +719,9 @@ void handle_input(struct AppState *state)
                 state->items_state->selected = state->items_state->item_count - 1;
             }
             state->redraw = 1;
+            // Réinitialiser le scroll pour le nouveau message
+            state->scroll_state.scroll_position = 0;
+            state->scroll_state.scroll_to_bottom = true;
         }
     }
     else if (PAD_justRepeated(BTN_RIGHT))
@@ -922,7 +958,7 @@ void draw_screen(SDL_Surface *screen, struct AppState *state)
     // Convertir les \n littéraux en vrais retours à la ligne
     convert_escaped_newlines(original_message);
     
-    // Découpage sur les vrais retours à la ligne
+    // Split on actual newlines
     char *saveptr_lines;
     char *line = strtok_r(original_message, "\n", &saveptr_lines);
     int word_height = 0;
@@ -1017,15 +1053,32 @@ void draw_screen(SDL_Surface *screen, struct AppState *state)
     }
 
     // default to the middle of the screen
-    int current_message_y = (screen->h - messages_height) / 2;
-    if (state->items_state->items[state->items_state->selected].alignment == MessageAlignmentTop)
-    {
-        current_message_y = SCALE1(PADDING) + initial_padding;
+    // Calculer la hauteur du viewport et du contenu
+    state->scroll_state.viewport_height = screen->h - SCALE1(PADDING * 2) - initial_padding;
+    state->scroll_state.content_height = messages_height;
+    state->scroll_state.needs_scroll = messages_height > state->scroll_state.viewport_height;
+
+    // Si c'est la première fois qu'on affiche ce message et qu'on doit scroll au bas
+    if (state->scroll_state.scroll_to_bottom && state->scroll_state.needs_scroll) {
+        state->scroll_state.scroll_position = messages_height - state->scroll_state.viewport_height;
+        state->scroll_state.scroll_to_bottom = false;
     }
-    else if (state->items_state->items[state->items_state->selected].alignment == MessageAlignmentBottom)
-    {
-        current_message_y = screen->h - messages_height - SCALE1(PADDING) - initial_padding;
+
+    // Calculer la position Y initiale en fonction de l'alignement
+    int base_y = SCALE1(PADDING) + initial_padding;
+    if (!state->scroll_state.needs_scroll) {
+        if (state->items_state->items[state->items_state->selected].alignment == MessageAlignmentMiddle)
+        {
+            base_y = (screen->h - messages_height) / 2;
+        }
+        else if (state->items_state->items[state->items_state->selected].alignment == MessageAlignmentBottom)
+        {
+            base_y = screen->h - messages_height - SCALE1(PADDING) - initial_padding;
+        }
     }
+    
+    // Appliquer le scroll
+    int current_message_y = base_y - state->scroll_state.scroll_position;
 
     for (int i = 0; i <= message_count; i++)
     {
@@ -1710,7 +1763,7 @@ void destruct()
     PWR_quit();
     PAD_quit();
     if (!g_options.preserve_framebuffer) {
-        GFX_quit();  // Ne pas nettoyer le framebuffer si l'option est active
+        GFX_quit();  // Don't clear the framebuffer if the option is active
     }
 }
 
@@ -1739,7 +1792,7 @@ unsigned long get_current_time_ms() {
     return (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
 }
 
-// Mettre à jour et dessiner le spinner
+// Update and draw the spinner
 void update_spinner(SDL_Surface *screen) {
     if (!g_options.spinner.active) return;
 
@@ -1747,29 +1800,26 @@ void update_spinner(SDL_Surface *screen) {
     if (current_time - g_options.spinner.last_update >= 100) { // Update every 100ms
         g_options.spinner.current_frame = (g_options.spinner.current_frame + 1) % SPINNER_FRAMES;
         g_options.spinner.last_update = current_time;
-    }
-
-    // Position le spinner juste après le dernier message
-    if (g_options.spinner.last_message_width > 0) {
-        // Calcule la position en fonction du dernier message
+    }        // Position the spinner right after the last message
+        if (g_options.spinner.last_message_width > 0) {
+            // Calculate position based on the last message
         g_options.spinner.x = g_options.spinner.last_message_x + g_options.spinner.last_message_width + SCALE1(10);
         g_options.spinner.y = g_options.spinner.last_message_y;
-    } else {
-        // Position par défaut si pas de message
+    } else {            // Default position if no message
         g_options.spinner.x = screen->w - SCALE1(30);
         g_options.spinner.y = screen->h - SCALE1(30);
     }
 
     TTF_Font* font = TTF_OpenFont(FONT_PATH, SCALE1(20));
     if (font) {
-        SDL_Color color = {255, 255, 255, 255};  // Blanc
+        SDL_Color color = {255, 255, 255, 255};  // White
         SDL_Surface* text = TTF_RenderUTF8_Blended(font, 
             SPINNER_CHARS[g_options.spinner.current_frame], color);
         
         if (text) {
             SDL_Rect pos = {
                 g_options.spinner.x,
-                g_options.spinner.y + (g_options.spinner.last_message_height - text->h) / 2, // Centrer verticalement par rapport au texte
+                g_options.spinner.y + (g_options.spinner.last_message_height - text->h) / 2, // Vertically center relative to the text
                 text->w,
                 text->h
             };
@@ -1819,6 +1869,7 @@ int main(int argc, char *argv[])
         .items_state = NULL,
         .start_time = 0,
         .show_pill = false,
+        .scroll_state = {0},  // Initialize scroll state
     };
 
     // assign the default values to the app state
@@ -1895,7 +1946,7 @@ int main(int argc, char *argv[])
         // redraw the screen if there has been a change
         if (state.redraw || g_options.spinner.active)  // Force redraw if spinner is active
         {
-            // Ne pas nettoyer l'écran au début de chaque boucle si preserve_framebuffer est actif
+            // Don't clear the screen at the start of each loop if preserve_framebuffer is active
             if (!g_options.preserve_framebuffer)
             {
                 GFX_clear(screen);
