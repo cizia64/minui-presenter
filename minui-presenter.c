@@ -180,6 +180,7 @@ struct Message
 {
     char message[1024];
     int width;
+    bool is_newline;  // Indique si ce mot commence une nouvelle ligne (après un \n)
 };
 
 void strtrim(char *s)
@@ -811,74 +812,84 @@ void draw_screen(SDL_Surface *screen, struct AppState *state)
     int word_count = 0;
     char original_message[1024];
     strncpy(original_message, state->items_state->items[state->items_state->selected].text, sizeof(original_message));
-    char *word = strtok(original_message, " ");
+    
+    // Convertir les \n littéraux en vrais retours à la ligne
+    convert_escaped_newlines(original_message);
+    
+    // Découpage sur les vrais retours à la ligne
+    char *saveptr_lines;
+    char *line = strtok_r(original_message, "\n", &saveptr_lines);
     int word_height = 0;
-    while (word != NULL)
-    {
-        int word_width;
-        strtrim(word);
-        if (strcmp(word, "") == 0)
-        {
-            continue;
-        }
+    bool first_line = true;
 
-        TTF_SizeUTF8(state->fonts.large, word, &word_width, &word_height);
-        strncpy(words[word_count].message, word, sizeof(words[word_count].message));
-        words[word_count].width = word_width;
-        word_count++;
-        word = strtok(NULL, " ");
+    while (line != NULL) {
+        // Pour chaque ligne, on découpe en mots
+        char *saveptr_words;
+        char *word = strtok_r(line, " ", &saveptr_words);
+        bool first_word_in_line = true;
+
+        while (word != NULL) {
+            strtrim(word);
+            if (strcmp(word, "") != 0) {
+                int word_width;
+                TTF_SizeUTF8(state->fonts.large, word, &word_width, &word_height);
+                
+                // On force une nouvelle ligne si ce n'est pas la première ligne
+                words[word_count].is_newline = !first_line && first_word_in_line;
+                strncpy(words[word_count].message, word, sizeof(words[word_count].message));
+                words[word_count].width = word_width;
+                word_count++;
+                first_word_in_line = false;
+            }
+            word = strtok_r(NULL, " ", &saveptr_words);
+        }
+        
+        line = strtok_r(NULL, "\n", &saveptr_lines);
+        first_line = false;
     }
 
     int letter_width = 0;
     TTF_SizeUTF8(state->fonts.large, "A", &letter_width, NULL);
 
     // construct a list of messages that can be displayed on a single line
-    // if the message is too long to be displayed on a single line,
-    // the message will be wrapped onto multiple lines
     struct Message messages[MAIN_ROW_COUNT];
-    for (int i = 0; i < MAIN_ROW_COUNT; i++)
-    {
+    for (int i = 0; i < MAIN_ROW_COUNT; i++) {
         strncpy(messages[i].message, "", sizeof(messages[i].message));
         messages[i].width = 0;
     }
 
     int message_count = 0;
     int current_message_index = 0;
-    for (int i = 0; i < word_count; i++)
-    {
-        if (current_message_index >= MAIN_ROW_COUNT)
-        {
+    for (int i = 0; i < word_count; i++) {
+        if (current_message_index >= MAIN_ROW_COUNT) {
             break;
         }
 
+        // Si le mot doit commencer une nouvelle ligne (après un \n), on force un nouveau message
+        if (words[i].is_newline) {
+            current_message_index++;
+            message_count++;
+            strncpy(messages[current_message_index].message, words[i].message, sizeof(messages[current_message_index].message));
+            messages[current_message_index].width = words[i].width;
+            continue;
+        }
+
         int potential_width = messages[current_message_index].width + words[i].width;
-        if (i > 0)
-        {
+        if (messages[current_message_index].width > 0) {
             potential_width += letter_width;
         }
 
-        if (messages[current_message_index].width == 0)
-        {
+        if (messages[current_message_index].width == 0) {
             strncpy(messages[current_message_index].message, words[i].message, sizeof(messages[current_message_index].message));
             messages[current_message_index].width = words[i].width;
         }
-        else if (potential_width <= FIXED_WIDTH - 2 * message_padding)
-        {
-            if (messages[current_message_index].width == 0)
-            {
-                strncpy(messages[current_message_index].message, words[i].message, sizeof(messages[current_message_index].message));
-            }
-            else
-            {
-                char messageBuf[256];
-                snprintf(messageBuf, sizeof(messageBuf), "%s %s", messages[current_message_index].message, words[i].message);
-
-                strncpy(messages[current_message_index].message, messageBuf, sizeof(messages[current_message_index].message));
-            }
-            messages[current_message_index].width += words[i].width;
+        else if (potential_width <= FIXED_WIDTH - 2 * message_padding) {
+            char messageBuf[256];
+            snprintf(messageBuf, sizeof(messageBuf), "%s %s", messages[current_message_index].message, words[i].message);
+            strncpy(messages[current_message_index].message, messageBuf, sizeof(messages[current_message_index].message));
+            messages[current_message_index].width += words[i].width + letter_width;
         }
-        else
-        {
+        else {
             current_message_index++;
             message_count++;
             strncpy(messages[current_message_index].message, words[i].message, sizeof(messages[current_message_index].message));
@@ -1513,6 +1524,24 @@ void destruct()
     PWR_quit();
     PAD_quit();
     GFX_quit();
+}
+
+// Nouvelle fonction pour convertir les \n littéraux en vrais retours à la ligne
+void convert_escaped_newlines(char *str) {
+    char *src = str;
+    char *dst = str;
+    
+    while (*src) {
+        if (src[0] == '\\' && src[1] == 'n') {
+            *dst = '\n';
+            src++;  // Skip the extra character
+        } else {
+            *dst = *src;
+        }
+        src++;
+        dst++;
+    }
+    *dst = '\0';  // Ensure null termination
 }
 
 // main is the entry point for the app
