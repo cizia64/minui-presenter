@@ -1825,7 +1825,7 @@ void init()
     // set the cpu speed to the menu speed
     // this is done here to ensure we downclock
     // the menu (no need to draw power unnecessarily)
-    PWR_setCPUSpeed(CPU_SPEED_MENU);
+    // PWR_setCPUSpeed(CPU_SPEED_MENU);
 
     // initialize:
     // - the screen, allowing us to draw to it
@@ -1837,15 +1837,15 @@ void init()
         screen = GFX_init(MODE_MAIN);
     }
     PAD_init();
-    PWR_init();
-    InitSettings();
+    // PWR_init();
+    // InitSettings();
 }
 
 // destruct cleans up the app state in reverse order
 void destruct()
 {
-    QuitSettings();
-    PWR_quit();
+    // QuitSettings();
+    // PWR_quit();
     PAD_quit();
     if (!g_options.preserve_framebuffer) {
         GFX_quit();  // Do not clean framebuffer if option is enabled
@@ -1996,7 +1996,7 @@ int main(int argc, char *argv[])
     }
 
     // get initial wifi state
-    int was_online = PLAT_isOnline();
+    // int was_online = PLAT_isOnline();
 
     // get the current time
     gettimeofday(&state.start_time, NULL);
@@ -2012,21 +2012,21 @@ int main(int argc, char *argv[])
     {
         // start the frame to ensure GFX_sync() works
         // on devices that don't support vsync
-        GFX_startFrame();
+        // GFX_startFrame();
 
         // handle turning the on/off screen on/off
         // as well as general power management
-        PWR_update(&state.redraw, &show_setting, NULL, NULL);
+        // PWR_update(&state.redraw, &show_setting, NULL, NULL);
 
         // check if the device is on wifi
         // redraw if the wifi state changed
         // and then update our state
-        int is_online = PLAT_isOnline();
-        if (was_online != is_online)
-        {
-            state.redraw = 1;
-        }
-        was_online = is_online;
+        // int is_online = PLAT_isOnline();
+        // if (was_online != is_online)
+        // {
+        //     state.redraw = 1;
+        // }
+        // was_online = is_online;
 
         // handle any input events
         handle_input(&state);
@@ -2040,16 +2040,16 @@ int main(int argc, char *argv[])
                 GFX_clear(screen);
             }
 
-            if (state.show_hardware_group)
-            {
-                // draw the hardware information in the top-right
-                GFX_blitHardwareGroup(screen, show_setting);
-                // draw the setting hints
-                if (show_setting && !GetHDMI())
-                {
-                    GFX_blitHardwareHints(screen, show_setting);
-                }
-            }
+            // if (state.show_hardware_group)
+            // {
+            //     // draw the hardware information in the top-right
+            //     GFX_blitHardwareGroup(screen, show_setting);
+            //     // draw the setting hints
+            //     if (show_setting && !GetHDMI())
+            //     {
+            //         GFX_blitHardwareHints(screen, show_setting);
+            //     }
+            // }
 
             // Draw the main content
             draw_screen(screen, &state);
