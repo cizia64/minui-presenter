@@ -22,12 +22,13 @@
 #include "utils.h"
 
 // Structure to manage text scrolling
-struct ScrollState {
-    int scroll_position;    // Current scroll position (in pixels)
-    int content_height;     // Total content height
-    int viewport_height;    // Visible height
-    bool needs_scroll;      // Indicates if the content needs scrolling
-    bool scroll_to_bottom;  // Indicates if we should scroll to the bottom of the text
+struct ScrollState
+{
+    int scroll_position;   // Current scroll position (in pixels)
+    int content_height;    // Total content height
+    int viewport_height;   // Visible height
+    bool needs_scroll;     // Indicates if the content needs scrolling
+    bool scroll_to_bottom; // Indicates if we should scroll to the bottom of the text
 };
 
 // Function prototypes
@@ -35,9 +36,9 @@ void convert_escaped_newlines(char *str);
 void draw_scrollbar(SDL_Surface *screen, struct ScrollState *scroll_state, int initial_padding);
 
 // Constants for the scrollbar
-#define SCROLLBAR_WIDTH SCALE1(4)  // Scrollbar width
-#define SCROLLBAR_PADDING SCALE1(2)  // Padding between the scrollbar and the edge of the screen
-#define SCROLLBAR_MIN_HEIGHT SCALE1(20)  // Minimum height of the scrollbar thumb
+#define SCROLLBAR_WIDTH SCALE1(4)       // Scrollbar width
+#define SCROLLBAR_PADDING SCALE1(2)     // Padding between the scrollbar and the edge of the screen
+#define SCROLLBAR_MIN_HEIGHT SCALE1(20) // Minimum height of the scrollbar thumb
 
 SDL_Surface *screen = NULL;
 
@@ -54,13 +55,14 @@ enum list_result_t
 {
     ExitCodeSuccess = 0,
     ExitCodeError = 1,
-    ExitCodeCancelButton = 2,
+    ExitCodeInactionButton = 11, // position: left-external ("lout", often Y)
+    ExitCodeActionButton = 12,   // position: left-internal ("lin", often X)
+    ExitCodeCancelButton = 13,   // position: right-internal ("rin", often B)
+    ExitCodeConfirmButton = 14,  // position: right-external ("rout", often A)
     ExitCodeMenuButton = 3,
-    ExitCodeActionButton = 4,
-    ExitCodeInactionButton = 5,
     ExitCodeStartButton = 6,
-    ExitCodeParseError = 10,
-    ExitCodeSerializeError = 11,
+    ExitCodeParseError = 20,
+    ExitCodeSerializeError = 21,
     ExitCodeTimeout = 124,
     ExitCodeKeyboardInterrupt = 130,
     ExitCodeSigterm = 143,
@@ -210,8 +212,9 @@ struct AppState
 
 // Animation spinner
 #define SPINNER_FRAMES 4
-const char* SPINNER_CHARS[SPINNER_FRAMES] = {"|", "/", "-", "\\"};
-struct Spinner {
+const char *SPINNER_CHARS[SPINNER_FRAMES] = {"|", "/", "-", "\\"};
+struct Spinner
+{
     bool active;
     int current_frame;
     unsigned long last_update;
@@ -225,7 +228,8 @@ struct Spinner {
 };
 
 // Global options
-struct GlobalOptions {
+struct GlobalOptions
+{
     bool preserve_framebuffer;
     struct Spinner spinner;
 } g_options = {
@@ -239,20 +243,19 @@ struct GlobalOptions {
         .last_message_x = 0,
         .last_message_width = 0,
         .last_message_y = 0,
-        .last_message_height = 0
-    }
-};
+        .last_message_height = 0}};
 
 struct Message
 {
     char message[1024];
     int width;
-    bool is_newline;  // Indicates if this word starts a new line (after a \n)
+    bool is_newline; // Indicates if this word starts a new line (after a \n)
 };
 
 void strtrim(char *s)
 {
-    if (!s) return;  // Protection against NULL pointer
+    if (!s)
+        return; // Protection against NULL pointer
 
     char *p = s;
     int l = strlen(p);
@@ -262,7 +265,7 @@ void strtrim(char *s)
         return;
     }
 
-    while (l > 0 && isspace(p[l - 1]))  // Added bound check
+    while (l > 0 && isspace(p[l - 1])) // Added bound check
     {
         p[--l] = 0;
     }
@@ -273,7 +276,7 @@ void strtrim(char *s)
         --l;
     }
 
-    if (p != s)  // Only move if needed
+    if (p != s) // Only move if needed
         memmove(s, p, l + 1);
 }
 
@@ -304,8 +307,9 @@ char *read_stdin()
             new_contents = stdin_contents;
         }
 
-        if (new_contents == NULL) {
-            free(stdin_contents);  // Free previously allocated memory
+        if (new_contents == NULL)
+        {
+            free(stdin_contents); // Free previously allocated memory
             log_error("Memory allocation failed in read_stdin");
             return NULL;
         }
@@ -322,7 +326,8 @@ char *read_stdin()
         if (stdin_used == stdin_size)
         {
             new_contents = realloc(stdin_contents, stdin_size + 1);
-            if (new_contents == NULL) {
+            if (new_contents == NULL)
+            {
                 free(stdin_contents);
                 log_error("Memory allocation failed in read_stdin");
                 return NULL;
@@ -340,7 +345,7 @@ struct ItemsState *ItemsState_New(const char *filename, const char *item_key, co
 {
     struct ItemsState *state = malloc(sizeof(struct ItemsState));
     enum HorizontalAlignment default_horizontal_alignment = HorizontalAlignmentCenter;
-    int default_line_spacing = PADDING;  // default line spacing
+    int default_line_spacing = PADDING; // default line spacing
 
     JSON_Value *root_value;
     if (strcmp(filename, "-") == 0)
@@ -419,7 +424,7 @@ struct ItemsState *ItemsState_New(const char *filename, const char *item_key, co
         if (background_image != NULL)
         {
             char *temp = strdup(background_image);
-            free(state->items[i].background_image);  // Free previous allocation
+            free(state->items[i].background_image); // Free previous allocation
             state->items[i].background_image = temp;
             state->items[i].image_exists = access(background_image, F_OK) != -1;
         }
@@ -675,7 +680,7 @@ void handle_input(struct AppState *state)
         }
     }
 
-    if (is_action_button_pressed && state->action_show)
+    if (is_action_button_pressed)
     {
         state->redraw = 0;
         state->quitting = 1;
@@ -683,11 +688,11 @@ void handle_input(struct AppState *state)
         return;
     }
 
-    if (is_confirm_button_pressed && state->confirm_show)
+    if (is_confirm_button_pressed)
     {
         state->redraw = 0;
         state->quitting = 1;
-        state->exit_code = ExitCodeSuccess;
+        state->exit_code = ExitCodeConfirmButton;
         return;
     }
 
@@ -699,7 +704,7 @@ void handle_input(struct AppState *state)
         return;
     }
 
-    if (is_inaction_button_pressed && state->inaction_show)
+    if (is_inaction_button_pressed)
     {
         state->redraw = 0;
         state->quitting = 1;
@@ -707,13 +712,13 @@ void handle_input(struct AppState *state)
         return;
     }
 
-    if (PAD_justReleased(BTN_START))
-    {
-        state->redraw = 0;
-        state->quitting = 1;
-        state->exit_code = ExitCodeStartButton;
-        return;
-    }
+    // if (PAD_justReleased(BTN_START))
+    // {
+    //     state->redraw = 0;
+    //     state->quitting = 1;
+    //     state->exit_code = ExitCodeStartButton;
+    //     return;
+    // }
 
     // Handle scrolling with up/down buttons
     int scroll_speed = SCALE1(20); // Scrolling speed in pixels
@@ -737,7 +742,7 @@ void handle_input(struct AppState *state)
             state->scroll_state.scroll_to_bottom = false;
         }
     }
-    
+
     if (PAD_justRepeated(BTN_LEFT))
     {
         if (state->items_state->selected == 0 && !PAD_justPressed(BTN_LEFT))
@@ -858,9 +863,9 @@ SDL_Surface *scale_surface(SDL_Surface *surface,
 void draw_screen(SDL_Surface *screen, struct AppState *state)
 {
     // Do not clear the screen if preserve_framebuffer is active and a background is not explicitly defined
-    bool should_clear = !g_options.preserve_framebuffer || 
-                       (state->items_state->items[state->items_state->selected].background_color != NULL) ||
-                       (state->items_state->items[state->items_state->selected].background_image != NULL);
+    bool should_clear = !g_options.preserve_framebuffer ||
+                        (state->items_state->items[state->items_state->selected].background_color != NULL) ||
+                        (state->items_state->items[state->items_state->selected].background_image != NULL);
 
     if (should_clear)
     {
@@ -987,7 +992,7 @@ void draw_screen(SDL_Surface *screen, struct AppState *state)
     int word_count = 0;
     char original_message[1024];
     strncpy(original_message, state->items_state->items[state->items_state->selected].text, sizeof(original_message));
-    
+
     // Convert literal \n into actual line breaks
     convert_escaped_newlines(original_message);
 
@@ -998,8 +1003,10 @@ void draw_screen(SDL_Surface *screen, struct AppState *state)
     bool first_line = true;
     int line_count = 0;
 
-    while (line != NULL) {
-        if (line_count >= MAX_MESSAGES) {
+    while (line != NULL)
+    {
+        if (line_count >= MAX_MESSAGES)
+        {
             log_error("Too many lines in message");
             break;
         }
@@ -1010,12 +1017,14 @@ void draw_screen(SDL_Surface *screen, struct AppState *state)
         char *word = strtok_r(line, " ", &saveptr_words);
         bool first_word_in_line = true;
 
-        while (word != NULL && word_count < 1024) {
+        while (word != NULL && word_count < 1024)
+        {
             strtrim(word);
-            if (strcmp(word, "") != 0) {
+            if (strcmp(word, "") != 0)
+            {
                 int word_width;
                 TTF_SizeUTF8(state->fonts.large, word, &word_width, &word_height);
-                
+
                 // Force a new line if it's not the first line
                 words[word_count].is_newline = !first_line && first_word_in_line;
                 strncpy(words[word_count].message, word, sizeof(words[word_count].message));
@@ -1025,7 +1034,7 @@ void draw_screen(SDL_Surface *screen, struct AppState *state)
             }
             word = strtok_r(NULL, " ", &saveptr_words);
         }
-        
+
         line = strtok_r(NULL, "\n", &saveptr_lines);
         first_line = false;
     }
@@ -1035,21 +1044,25 @@ void draw_screen(SDL_Surface *screen, struct AppState *state)
 
     // construct a list of messages that can be displayed on a single line
     struct Message messages[MAX_MESSAGES];
-    for (int i = 0; i < MAX_MESSAGES; i++) {
+    for (int i = 0; i < MAX_MESSAGES; i++)
+    {
         strncpy(messages[i].message, "", sizeof(messages[i].message));
         messages[i].width = 0;
     }
 
     int message_count = 0;
     int current_message_index = 0;
-    for (int i = 0; i < word_count; i++) {
-        if (current_message_index >= MAX_MESSAGES - 1) {  // Keeping a safety margin
+    for (int i = 0; i < word_count; i++)
+    {
+        if (current_message_index >= MAX_MESSAGES - 1)
+        { // Keeping a safety margin
             log_error("Maximum number of lines reached");
             break;
         }
 
         // If the word is to start a new line (after an \n), we force a new message
-        if (words[i].is_newline) {
+        if (words[i].is_newline)
+        {
             current_message_index++;
             message_count++;
             strncpy(messages[current_message_index].message, words[i].message, sizeof(messages[current_message_index].message));
@@ -1058,21 +1071,25 @@ void draw_screen(SDL_Surface *screen, struct AppState *state)
         }
 
         int potential_width = messages[current_message_index].width + words[i].width;
-        if (messages[current_message_index].width > 0) {
+        if (messages[current_message_index].width > 0)
+        {
             potential_width += letter_width;
         }
 
-        if (messages[current_message_index].width == 0) {
+        if (messages[current_message_index].width == 0)
+        {
             strncpy(messages[current_message_index].message, words[i].message, sizeof(messages[current_message_index].message));
             messages[current_message_index].width = words[i].width;
         }
-        else if (potential_width <= FIXED_WIDTH - 2 * message_padding) {
+        else if (potential_width <= FIXED_WIDTH - 2 * message_padding)
+        {
             char messageBuf[256];
             snprintf(messageBuf, sizeof(messageBuf), "%s %s", messages[current_message_index].message, words[i].message);
             strncpy(messages[current_message_index].message, messageBuf, sizeof(messages[current_message_index].message));
             messages[current_message_index].width += words[i].width + letter_width;
         }
-        else {
+        else
+        {
             current_message_index++;
             message_count++;
             strncpy(messages[current_message_index].message, words[i].message, sizeof(messages[current_message_index].message));
@@ -1081,8 +1098,9 @@ void draw_screen(SDL_Surface *screen, struct AppState *state)
     }
 
     int messages_height = (current_message_index + 1) * word_height;
-    if (current_message_index > 0) {
-        messages_height += (current_message_index) * SCALE1(state->items_state->items[state->items_state->selected].line_spacing);
+    if (current_message_index > 0)
+    {
+        messages_height += (current_message_index)*SCALE1(state->items_state->items[state->items_state->selected].line_spacing);
     }
 
     // default to the middle of the screen
@@ -1092,14 +1110,16 @@ void draw_screen(SDL_Surface *screen, struct AppState *state)
     state->scroll_state.needs_scroll = messages_height > state->scroll_state.viewport_height;
 
     // If this is the first time you've displayed this message and you need to scroll to the bottom
-    if (state->scroll_state.scroll_to_bottom && state->scroll_state.needs_scroll) {
+    if (state->scroll_state.scroll_to_bottom && state->scroll_state.needs_scroll)
+    {
         state->scroll_state.scroll_position = messages_height - state->scroll_state.viewport_height;
         state->scroll_state.scroll_to_bottom = false;
     }
 
     // Calculate initial Y position as a function of alignment
     int base_y = SCALE1(PADDING) + initial_padding;
-    if (!state->scroll_state.needs_scroll) {
+    if (!state->scroll_state.needs_scroll)
+    {
         if (state->items_state->items[state->items_state->selected].alignment == MessageAlignmentMiddle)
         {
             base_y = (screen->h - messages_height) / 2;
@@ -1109,7 +1129,7 @@ void draw_screen(SDL_Surface *screen, struct AppState *state)
             base_y = screen->h - messages_height - SCALE1(PADDING) - initial_padding;
         }
     }
-    
+
     // Apply scroll
     int current_message_y = base_y - state->scroll_state.scroll_position;
 
@@ -1145,7 +1165,8 @@ void draw_screen(SDL_Surface *screen, struct AppState *state)
         }
 
         // Adjust X position to make room for scrollbar if necessary
-        if (state->scroll_state.needs_scroll) {
+        if (state->scroll_state.needs_scroll)
+        {
             x_pos = MIN(x_pos, screen->w - text->w - SCROLLBAR_WIDTH - SCROLLBAR_PADDING * 2);
         }
 
@@ -1156,7 +1177,8 @@ void draw_screen(SDL_Surface *screen, struct AppState *state)
             text->h};
 
         // Save the position of the last message for the spinner
-        if (i == message_count) {
+        if (i == message_count)
+        {
             g_options.spinner.last_message_x = x_pos;
             g_options.spinner.last_message_width = text->w;
             g_options.spinner.last_message_y = pos.y;
@@ -1197,7 +1219,6 @@ void draw_screen(SDL_Surface *screen, struct AppState *state)
     }
 
     // Draw the scrollbar if necessary
- 
 
     draw_scrollbar(screen, &state->scroll_state, initial_padding);
 
@@ -1205,44 +1226,44 @@ void draw_screen(SDL_Surface *screen, struct AppState *state)
     state->redraw = 0;
 }
 
-   void draw_scrollbar(SDL_Surface *screen, struct ScrollState *scroll_state, int initial_padding) {
-        if (!scroll_state->needs_scroll) return;
+void draw_scrollbar(SDL_Surface *screen, struct ScrollState *scroll_state, int initial_padding)
+{
+    if (!scroll_state->needs_scroll)
+        return;
 
-        int viewport_start = SCALE1(PADDING) + initial_padding;
-        int viewport_height = scroll_state->viewport_height;
-        int total_height = scroll_state->content_height;
-        
-        // Calculate the position and size of the scrollbar thumb
-        float ratio = (float)viewport_height / total_height;
-        int thumb_height = MAX(SCROLLBAR_MIN_HEIGHT, viewport_height * ratio);
+    int viewport_start = SCALE1(PADDING) + initial_padding;
+    int viewport_height = scroll_state->viewport_height;
+    int total_height = scroll_state->content_height;
 
-        // Calculate the position of the scrollbar thumb
-        float scroll_ratio = (float)scroll_state->scroll_position / (total_height - viewport_height);
-        int scroll_space = viewport_height - thumb_height;
-        int thumb_y = viewport_start + (scroll_space * scroll_ratio);
+    // Calculate the position and size of the scrollbar thumb
+    float ratio = (float)viewport_height / total_height;
+    int thumb_height = MAX(SCROLLBAR_MIN_HEIGHT, viewport_height * ratio);
 
-        // Draw the scrollbar background (darker)
-        SDL_Rect bg_rect = {
-            screen->w - SCROLLBAR_WIDTH - SCROLLBAR_PADDING,
-            viewport_start,
-            SCROLLBAR_WIDTH,
-            viewport_height
-        };
-        SDL_Color bg_color = {100, 100, 100, 128}; // Dark gray semi-transparent
-        uint32_t bg_color_value = SDL_MapRGBA(screen->format, bg_color.r, bg_color.g, bg_color.b, bg_color.a);
-        SDL_FillRect(screen, &bg_rect, bg_color_value);
+    // Calculate the position of the scrollbar thumb
+    float scroll_ratio = (float)scroll_state->scroll_position / (total_height - viewport_height);
+    int scroll_space = viewport_height - thumb_height;
+    int thumb_y = viewport_start + (scroll_space * scroll_ratio);
 
-        // Draw the scrollbar thumb (lighter)
-        SDL_Rect thumb_rect = {
-            screen->w - SCROLLBAR_WIDTH - SCROLLBAR_PADDING,
-            thumb_y,
-            SCROLLBAR_WIDTH,
-            thumb_height
-        };
-        SDL_Color thumb_color = {200, 200, 200, 192}; // Light gray more opaque
-        uint32_t thumb_color_value = SDL_MapRGBA(screen->format, thumb_color.r, thumb_color.g, thumb_color.b, thumb_color.a);
-        SDL_FillRect(screen, &thumb_rect, thumb_color_value);
-    }
+    // Draw the scrollbar background (darker)
+    SDL_Rect bg_rect = {
+        screen->w - SCROLLBAR_WIDTH - SCROLLBAR_PADDING,
+        viewport_start,
+        SCROLLBAR_WIDTH,
+        viewport_height};
+    SDL_Color bg_color = {100, 100, 100, 128}; // Dark gray semi-transparent
+    uint32_t bg_color_value = SDL_MapRGBA(screen->format, bg_color.r, bg_color.g, bg_color.b, bg_color.a);
+    SDL_FillRect(screen, &bg_rect, bg_color_value);
+
+    // Draw the scrollbar thumb (lighter)
+    SDL_Rect thumb_rect = {
+        screen->w - SCROLLBAR_WIDTH - SCROLLBAR_PADDING,
+        thumb_y,
+        SCROLLBAR_WIDTH,
+        thumb_height};
+    SDL_Color thumb_color = {200, 200, 200, 192}; // Light gray more opaque
+    uint32_t thumb_color_value = SDL_MapRGBA(screen->format, thumb_color.r, thumb_color.g, thumb_color.b, thumb_color.a);
+    SDL_FillRect(screen, &thumb_rect, thumb_color_value);
+}
 
 bool open_fonts(struct AppState *state)
 {
@@ -1373,8 +1394,8 @@ bool parse_arguments(struct AppState *state, int argc, char *argv[])
     char *font_path = NULL;
     char message[1024];
     char alignment[1024] = "";
-    char horizontal_alignment[1024] = "center";  // default value
-    int line_spacing = PADDING;  // default value
+    char horizontal_alignment[1024] = "center"; // default value
+    int line_spacing = PADDING;                 // default value
     while ((opt = getopt_long(argc, argv, "a:A:b:B:c:C:d:D:E:f:F:h:i:I:K:l:m:M:pst:QPSTUWYXZ", long_options, NULL)) != -1)
     {
         switch (opt)
@@ -1582,10 +1603,10 @@ bool parse_arguments(struct AppState *state, int argc, char *argv[])
         strncpy(state->action_text, "ACTION", sizeof(state->action_text));
     }
 
-    if (strcmp(state->cancel_button, "") == 0)
-    {
-        strncpy(state->cancel_button, "B", sizeof(state->cancel_button));
-    }
+    // if (strcmp(state->cancel_button, "") == 0)   // we don't force B as cancel button by default
+    // {
+    //     strncpy(state->cancel_button, "B", sizeof(state->cancel_button));
+    // }
 
     if (strcmp(state->confirm_text, "") == 0)
     {
@@ -1847,70 +1868,84 @@ void destruct()
     // QuitSettings();
     // PWR_quit();
     PAD_quit();
-    if (!g_options.preserve_framebuffer) {
-        GFX_quit();  // Do not clean framebuffer if option is enabled
+    if (!g_options.preserve_framebuffer)
+    {
+        GFX_quit(); // Do not clean framebuffer if option is enabled
     }
 }
 
 // New function to convert literal \n into real line feeds
-void convert_escaped_newlines(char *str) {
+void convert_escaped_newlines(char *str)
+{
     char *src = str;
     char *dst = str;
-    
-    while (*src) {
-        if (src[0] == '\\' && src[1] == 'n') {
+
+    while (*src)
+    {
+        if (src[0] == '\\' && src[1] == 'n')
+        {
             *dst = '\n';
-            src++;  // Skip the extra character
-        } else {
+            src++; // Skip the extra character
+        }
+        else
+        {
             *dst = *src;
         }
         src++;
         dst++;
     }
-    *dst = '\0';  // Ensure null termination
+    *dst = '\0'; // Ensure null termination
 }
 
 // Get current time in milliseconds
-unsigned long get_current_time_ms() {
+unsigned long get_current_time_ms()
+{
     struct timeval tv;
     gettimeofday(&tv, NULL);
     return (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
 }
 
 // Update and design the spinner
-void update_spinner(SDL_Surface *screen) {
-    if (!g_options.spinner.active) return;
+void update_spinner(SDL_Surface *screen)
+{
+    if (!g_options.spinner.active)
+        return;
 
     unsigned long current_time = get_current_time_ms();
-    if (current_time - g_options.spinner.last_update >= 100) { // Update every 100ms
+    if (current_time - g_options.spinner.last_update >= 100)
+    { // Update every 100ms
         g_options.spinner.current_frame = (g_options.spinner.current_frame + 1) % SPINNER_FRAMES;
         g_options.spinner.last_update = current_time;
     }
 
     // Position the spinner just after the last message
-    if (g_options.spinner.last_message_width > 0) {
+    if (g_options.spinner.last_message_width > 0)
+    {
         // Calculates position based on last message
         g_options.spinner.x = g_options.spinner.last_message_x + g_options.spinner.last_message_width + SCALE1(10);
         g_options.spinner.y = g_options.spinner.last_message_y;
-    } else {
+    }
+    else
+    {
         // Default position if no message
         g_options.spinner.x = screen->w - SCALE1(30);
         g_options.spinner.y = screen->h - SCALE1(30);
     }
 
-    TTF_Font* font = TTF_OpenFont(FONT_PATH, SCALE1(20));
-    if (font) {
-        SDL_Color color = {255, 255, 255, 255};  // White
-        SDL_Surface* text = TTF_RenderUTF8_Blended(font, 
-            SPINNER_CHARS[g_options.spinner.current_frame], color);
-        
-        if (text) {
+    TTF_Font *font = TTF_OpenFont(FONT_PATH, SCALE1(20));
+    if (font)
+    {
+        SDL_Color color = {255, 255, 255, 255}; // White
+        SDL_Surface *text = TTF_RenderUTF8_Blended(font,
+                                                   SPINNER_CHARS[g_options.spinner.current_frame], color);
+
+        if (text)
+        {
             SDL_Rect pos = {
                 g_options.spinner.x,
                 g_options.spinner.y + (g_options.spinner.last_message_height - text->h) / 2, // Center vertically in relation to text
                 text->w,
-                text->h
-            };
+                text->h};
             SDL_BlitSurface(text, NULL, screen, &pos);
             SDL_FreeSurface(text);
         }
@@ -1926,9 +1961,9 @@ int main(int argc, char *argv[])
     char default_action_text[1024] = "ACTION";
     char default_background_image[1024] = "";
     char default_background_color[1024] = "#000000";
-    char default_cancel_button[1024] = "B";
+    char default_cancel_button[1024] = "";
     char default_cancel_text[1024] = "BACK";
-    char default_confirm_button[1024] = "A";
+    char default_confirm_button[1024] = "";
     char default_confirm_text[1024] = "SELECT";
     char default_inaction_button[1024] = "";
     char default_inaction_text[1024] = "OTHER";
@@ -1957,7 +1992,7 @@ int main(int argc, char *argv[])
         .items_state = NULL,
         .start_time = 0,
         .show_pill = false,
-        .scroll_state = { .scroll_to_bottom = true },  // Initial display at bottom
+        .scroll_state = {.scroll_to_bottom = true}, // Initial display at bottom
     };
 
     // assign the default values to the app state
@@ -2032,7 +2067,7 @@ int main(int argc, char *argv[])
         handle_input(&state);
 
         // redraw the screen if there has been a change
-        if (state.redraw || g_options.spinner.active)  // Force redraw if spinner is active
+        if (state.redraw || g_options.spinner.active) // Force redraw if spinner is active
         {
             // Do not clean the screen at the start of each loop if preserve_framebuffer is active
             if (!g_options.preserve_framebuffer)
@@ -2053,9 +2088,10 @@ int main(int argc, char *argv[])
 
             // Draw the main content
             draw_screen(screen, &state);
-            
+
             // Draw the spinner if active
-            if (g_options.spinner.active) {
+            if (g_options.spinner.active)
+            {
                 update_spinner(screen);
             }
 
