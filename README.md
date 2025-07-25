@@ -58,6 +58,7 @@ minui-presenter --message "The quick brown fox jumps over the lazy dog"
 - `--file <path>`: Path to JSON file containing messages (default: empty string)
 - `--item-key <key>`: Key in JSON file containing items array (default: `items`)
 - `--quit-after-last-item`: Quit the program after navigating past the last element (default: `false`)
+- `--no-wrap`: Disable wrapping when navigating past first/last items (default: `false`)
 - `--show-pill`: Whether to show the pill by default or not (default: `false`)
 
 > [!IMPORTANT]

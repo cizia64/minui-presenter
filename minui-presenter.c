@@ -189,6 +189,8 @@ struct AppState
     char file[1024];
     // quit after last item
     bool quit_after_last_item;
+    // disable wrapping when navigating past first/last item
+    bool no_wrap;
     // whether to show the hardware group
     bool show_hardware_group;
     // whether to show the pill
@@ -763,12 +765,27 @@ void handle_input(struct AppState *state)
             state->items_state->selected -= 1;
             if (state->items_state->selected < 0)
             {
-                state->items_state->selected = state->items_state->item_count - 1;
+                if (state->no_wrap)
+                {
+                    state->items_state->selected = 0;
+                    state->redraw = 0;
+                }
+                else
+                {
+                    state->items_state->selected = state->items_state->item_count - 1;
+                    state->redraw = 1;
+                    // For the new message, ensure we start at the bottom
+                    state->scroll_state.scroll_position = 0;
+                    state->scroll_state.scroll_to_bottom = true; // Force display at the bottom
+                }
             }
-            state->redraw = 1;
-            // For the new message, ensure we start at the bottom
-            state->scroll_state.scroll_position = 0;
-            state->scroll_state.scroll_to_bottom = true; // Force display at the bottom
+            else
+            {
+                state->redraw = 1;
+                // For the new message, ensure we start at the bottom
+                state->scroll_state.scroll_position = 0;
+                state->scroll_state.scroll_to_bottom = true; // Force display at the bottom
+            }
         }
     }
     else if (PAD_justRepeated(BTN_RIGHT))
@@ -789,9 +806,21 @@ void handle_input(struct AppState *state)
                     state->exit_code = ExitCodeSuccess;
                     return;
                 }
-                state->items_state->selected = 0;
+                if (state->no_wrap)
+                {
+                    state->items_state->selected = state->items_state->item_count - 1;
+                    state->redraw = 0;
+                }
+                else
+                {
+                    state->items_state->selected = 0;
+                    state->redraw = 1;
+                }
             }
-            state->redraw = 1;
+            else
+            {
+                state->redraw = 1;
+            }
         }
     }
 }
@@ -1359,6 +1388,7 @@ void signal_handler(int signal)
 // - --font <path> (default: empty string)
 // - --font-size <size> (default: FONT_LARGE)
 // - --quit-after-last-item (default: false)
+// - --no-wrap (default: false)
 // - --show-hardware-group (default: false)
 // - --show-pill (default: false)
 // - --show-time-left (default: false)
@@ -1387,6 +1417,7 @@ bool parse_arguments(struct AppState *state, int argc, char *argv[])
         {"message", required_argument, 0, 'm'},
         {"message-alignment", required_argument, 0, 'M'},
         {"quit-after-last-item", no_argument, 0, 'Q'},
+        {"no-wrap", no_argument, 0, 'N'},
         {"show-pill", no_argument, 0, 'P'},
         {"show-hardware-group", no_argument, 0, 'S'},
         {"show-time-left", no_argument, 0, 'T'},
@@ -1405,7 +1436,7 @@ bool parse_arguments(struct AppState *state, int argc, char *argv[])
     char alignment[1024] = "";
     char horizontal_alignment[1024] = "center"; // default value
     int line_spacing = PADDING;                 // default value
-    while ((opt = getopt_long(argc, argv, "a:A:b:B:c:C:d:D:E:f:F:h:i:I:K:l:m:M:pst:QPSTUWYXZ", long_options, NULL)) != -1)
+    while ((opt = getopt_long(argc, argv, "a:A:b:B:c:C:d:D:E:f:F:h:i:I:K:l:m:M:Npst:QPSTUWYXZ", long_options, NULL)) != -1)
     {
         switch (opt)
         {
@@ -1465,6 +1496,9 @@ bool parse_arguments(struct AppState *state, int argc, char *argv[])
             break;
         case 'Q':
             state->quit_after_last_item = true;
+            break;
+        case 'N':
+            state->no_wrap = true;
             break;
         case 'P':
             state->show_pill = true;
