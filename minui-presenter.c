@@ -690,6 +690,15 @@ void handle_input(struct AppState *state)
 
     if (is_confirm_button_pressed)
     {
+        // Print the selected item text to console
+        if (state->items_state && state->items_state->items && 
+            state->items_state->selected >= 0 && 
+            state->items_state->selected < state->items_state->item_count)
+        {
+            printf("%s\n", state->items_state->items[state->items_state->selected].text);
+            fflush(stdout);
+        }
+        
         state->redraw = 0;
         state->quitting = 1;
         state->exit_code = ExitCodeConfirmButton;
