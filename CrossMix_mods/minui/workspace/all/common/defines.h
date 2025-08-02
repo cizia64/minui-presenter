@@ -63,6 +63,10 @@
 #define PADDING 10 // PILL_SIZE / 3 (or non-integer part of the previous calculatiom divided by three)
 #endif
 
+#ifndef HORIZONTAL_MARGIN
+#define HORIZONTAL_MARGIN 5 // Margin for horizontal text alignment (smaller than PADDING * 2)
+#endif
+
 #define FONT_LARGE 16 	// menu
 #define FONT_MEDIUM 14 	// single char button label
 #define FONT_SMALL 12 	// button hint

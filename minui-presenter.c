@@ -1191,10 +1191,10 @@ void draw_screen(SDL_Surface *screen, struct AppState *state)
         switch (state->items_state->items[state->items_state->selected].horizontal_alignment)
         {
         case HorizontalAlignmentLeft:
-            x_pos = SCALE1(PADDING * 2);
+            x_pos = SCALE1(HORIZONTAL_MARGIN);
             break;
         case HorizontalAlignmentRight:
-            x_pos = screen->w - text->w - SCALE1(PADDING * 2);
+            x_pos = screen->w - text->w - SCALE1(HORIZONTAL_MARGIN);
             break;
         case HorizontalAlignmentCenter:
         default:
