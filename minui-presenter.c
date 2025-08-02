@@ -34,6 +34,7 @@ struct ScrollState
 // Function prototypes
 void convert_escaped_newlines(char *str);
 void draw_scrollbar(SDL_Surface *screen, struct ScrollState *scroll_state, int initial_padding);
+void print_help(const char *program_name);
 
 // Constants for the scrollbar
 #define SCROLLBAR_WIDTH SCALE1(4)       // Scrollbar width
@@ -1410,6 +1411,7 @@ bool parse_arguments(struct AppState *state, int argc, char *argv[])
         {"font-default", required_argument, 0, 'f'},
         {"font-size-default", required_argument, 0, 'F'},
         {"horizontal-alignment", required_argument, 0, 'h'},
+        {"help", no_argument, 0, 'H'},
         {"line-spacing", required_argument, 0, 'l'},
         {"preserve-framebuffer", no_argument, 0, 'p'},
         {"show-spinner", no_argument, 0, 's'},
@@ -1436,7 +1438,7 @@ bool parse_arguments(struct AppState *state, int argc, char *argv[])
     char alignment[1024] = "";
     char horizontal_alignment[1024] = "center"; // default value
     int line_spacing = PADDING;                 // default value
-    while ((opt = getopt_long(argc, argv, "a:A:b:B:c:C:d:D:E:f:F:h:i:I:K:l:m:M:Npst:QPSTUWYXZ", long_options, NULL)) != -1)
+    while ((opt = getopt_long(argc, argv, "a:A:b:B:c:C:d:D:E:f:F:h:H:i:I:K:l:m:M:Npst:QPSTUWYXZ", long_options, NULL)) != -1)
     {
         switch (opt)
         {
@@ -1475,6 +1477,10 @@ bool parse_arguments(struct AppState *state, int argc, char *argv[])
             break;
         case 'h':
             strncpy(horizontal_alignment, optarg, sizeof(horizontal_alignment));
+            break;
+        case 'H':
+            print_help(argv[0]);
+            exit(ExitCodeSuccess);
             break;
         case 'i':
             strncpy(state->inaction_button, optarg, sizeof(state->inaction_button));
@@ -2053,6 +2059,11 @@ int main(int argc, char *argv[])
     strncpy(state.item_key, default_item_key, sizeof(state.item_key));
 
     // parse the arguments
+    if (argc == 1) {
+        print_help(argv[0]);
+        return ExitCodeSuccess;
+    }
+    
     if (!parse_arguments(&state, argc, argv))
     {
         return ExitCodeError;
@@ -2170,4 +2181,62 @@ int main(int argc, char *argv[])
 
     // exit the program
     return state.exit_code;
+}
+
+void print_help(const char *program_name)
+{
+    printf("minui-presenter - Graphical interface for scripts and applications\n\n");
+    printf("Usage: %s [OPTIONS] [--message \"text\" | --file file.json]\n\n", program_name);
+    printf("MAIN OPTIONS:\n");
+    printf("  --help                     Show this help\n");
+    printf("  -m, --message TEXT         Message to display\n");
+    printf("  -E, --file FILE            JSON file containing items to display\n");
+    printf("  -t, --timeout SECONDS      Timeout in seconds (0 = no timeout)\n\n");
+    
+    printf("DISPLAY OPTIONS:\n");
+    printf("  -b, --background-image IMG Background image\n");
+    printf("  -B, --background-color COL Background color (#RRGGBB format)\n");
+    printf("  -f, --font-default FONT    Font to use\n");
+    printf("  -F, --font-size-default N  Font size (default: %d)\n", FONT_LARGE);
+    printf("  -M, --message-alignment AL Vertical alignment: top, middle, bottom\n");
+    printf("  -h, --horizontal-alignment Horizontal alignment: left, center, right\n");
+    printf("  -l, --line-spacing N       Line spacing (default: %d)\n", PADDING);
+    printf("  -N, --no-wrap              Disable automatic text wrapping\n");
+    printf("  -P, --show-pill            Show items in pills/bubbles\n");
+    printf("  -s, --show-spinner         Show loading spinner\n");
+    printf("  -p, --preserve-framebuffer Preserve framebuffer\n\n");
+    
+    printf("BUTTON OPTIONS:\n");
+    printf("  -c, --confirm-button BTN   Confirm button (A, B, X, Y)\n");
+    printf("  -C, --confirm-text TEXT    Confirm button text\n");
+    printf("  -d, --cancel-button BTN    Cancel button (A, B, X, Y)\n");
+    printf("  -D, --cancel-text TEXT     Cancel button text\n");
+    printf("  -a, --action-button BTN    Action button (A, B, X, Y)\n");
+    printf("  -A, --action-text TEXT     Action button text\n");
+    printf("  -i, --inaction-button BTN  Inaction button (A, B, X, Y)\n");
+    printf("  -I, --inaction-text TEXT   Inaction button text\n");
+    printf("  -W, --confirm-show         Show confirm button\n");
+    printf("  -X, --cancel-show          Show cancel button\n");
+    printf("  -Y, --action-show          Show action button\n");
+    printf("  -Z, --inaction-show        Show inaction button\n\n");
+    
+    printf("ADVANCED OPTIONS:\n");
+    printf("  -K, --item-key KEY         JSON key for items (default: \"items\")\n");
+    printf("  -Q, --quit-after-last-item Quit after last item\n");
+    printf("  -S, --show-hardware-group  Show hardware group\n");
+    printf("  -T, --show-time-left       Show time left\n");
+    printf("  -U, --disable-auto-sleep   Disable auto sleep\n\n");
+    
+    printf("EXAMPLES:\n");
+    printf("  %s --message \"Hello!\" --timeout 5\n", program_name);
+    printf("  %s --file menu.json --horizontal-alignment left\n", program_name);
+    printf("  %s --message \"Confirm?\" --confirm-show --cancel-show\n", program_name);
+    printf("  %s --background-color \"#003366\" --message \"Text on blue background\"\n", program_name);
+    printf("\nEXIT CODES:\n");
+    printf("  0  : Success or confirmation\n");
+    printf("  1  : Error\n");
+    printf("  2  : Cancel\n");
+    printf("  3  : Action\n");
+    printf("  4  : Inaction\n");
+    printf("  5  : Timeout\n");
 }
