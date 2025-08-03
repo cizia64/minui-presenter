@@ -2071,6 +2071,11 @@ int main(int argc, char *argv[])
 
     swallow_stdout_from_function(init);
 
+    // Add a background buffer for the spinner + preserve_framebuffer optimization
+    SDL_Surface *background_buffer = NULL;
+    bool use_background_buffer = g_options.spinner.active;
+    bool buffer_initialized = false;
+
     struct sigaction sa = {
         .sa_handler = signal_handler,
         .sa_flags = SA_RESTART};
@@ -2120,32 +2125,50 @@ int main(int argc, char *argv[])
         // handle any input events
         handle_input(&state);
 
-        // redraw the screen if there has been a change
-        if (state.redraw || g_options.spinner.active) // Force redraw if spinner is active
+        bool spinner_needs_update = false;
+        if (g_options.spinner.active)
         {
-            // Do not clean the screen at the start of each loop if preserve_framebuffer is active
-            if (!g_options.preserve_framebuffer)
+            unsigned long current_time = get_current_time_ms();
+            if (current_time - g_options.spinner.last_update >= 100)
             {
-                GFX_clear(screen);
+                spinner_needs_update = true;
             }
+        }
 
-            // if (state.show_hardware_group)
-            // {
-            //     // draw the hardware information in the top-right
-            //     GFX_blitHardwareGroup(screen, show_setting);
-            //     // draw the setting hints
-            //     if (show_setting && !GetHDMI())
-            //     {
-            //         GFX_blitHardwareHints(screen, show_setting);
-            //     }
-            // }
-
-            // Draw the main content
-            draw_screen(screen, &state);
+        // redraw the screen if there has been a change
+        if (state.redraw || spinner_needs_update)
+        {
+            if (use_background_buffer && !state.redraw && buffer_initialized) {
+                // Optimization: restore from buffer instead of redrawing everything
+                SDL_BlitSurface(background_buffer, NULL, screen, NULL);
+            } else {
+                // Do not clean the screen at the start of each loop if preserve_framebuffer is active
+                if (!g_options.preserve_framebuffer)
+                {
+                    GFX_clear(screen);
+                }
+                draw_screen(screen, &state);
+                
+                // Initialize buffer after first complete draw
+                if (use_background_buffer && !buffer_initialized) {
+                    background_buffer = SDL_CreateRGBSurface(screen->flags, screen->w, screen->h, screen->format->BitsPerPixel, screen->format->Rmask, screen->format->Gmask, screen->format->Bmask, screen->format->Amask);
+                    if (background_buffer) {
+                        SDL_BlitSurface(screen, NULL, background_buffer, NULL);
+                        buffer_initialized = true;
+                    } else {
+                        log_error("Failed to create background buffer for spinner optimization.");
+                        use_background_buffer = false;
+                    }
+                }
+            }
 
             // Draw the spinner if active
             if (g_options.spinner.active)
             {
+                if (use_background_buffer && state.redraw && buffer_initialized) {
+                    // Update the buffer with the new background
+                    SDL_BlitSurface(screen, NULL, background_buffer, NULL);
+                }
                 update_spinner(screen);
             }
 
@@ -2154,6 +2177,7 @@ int main(int argc, char *argv[])
         }
         else
         {
+            SDL_Delay(16); // Reduce CPU usage when idle
             // Slows down the frame rate to match the refresh rate of the screen
             // when the screen is not being redrawn
             GFX_sync();
@@ -2163,7 +2187,7 @@ int main(int argc, char *argv[])
         if (state.timeout_seconds > 0)
         {
             struct timeval current_time;
-            gettimeofday(&current_time, NULL);
+            gettimeofday(& current_time, NULL);
             if (current_time.tv_sec - state.start_time.tv_sec >= state.timeout_seconds)
             {
                 state.exit_code = ExitCodeTimeout;
@@ -2175,6 +2199,10 @@ int main(int argc, char *argv[])
                 state.redraw = 1;
             }
         }
+    }
+
+    if (background_buffer) {
+        SDL_FreeSurface(background_buffer);
     }
 
     swallow_stdout_from_function(destruct);
